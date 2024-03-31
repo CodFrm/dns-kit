@@ -10,7 +10,7 @@ func TestEncode(t *testing.T) {
 	data, err := Encode(NewHeader(HS256([]byte("123456"))),
 		`{"iss":"joe","exp":1300819380,"http://example.com/is_root":true}`)
 	assert.NoError(t, err)
-	payload := map[string]interface{}{}
+	payload := map[string]any{}
 	header := NewHeader(HS256([]byte("123456")))
 	err = Decode(data, header, &payload)
 	assert.NoError(t, err)

@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -8,7 +9,7 @@ import (
 type Acme struct {
 	email      string
 	domain     []string
-	idn        []Identifiers
+	idn        []Identifier
 	challenges []Challenge
 	finalize   string
 	options    *Options
@@ -45,36 +46,36 @@ type Challenge struct {
 	Record        string
 }
 
-func (a *Acme) GetChallenge() error {
+func (a *Acme) GetChallenge(ctx context.Context) ([]Challenge, error) {
 	if a.options.client.GetKid() == "" {
 		// 有kid跳过此步
-		account, err := a.options.client.NewAccount([]string{
+		account, err := a.options.client.NewAccount(ctx, []string{
 			"mailto:" + a.email,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		a.options.client.SetKid(account)
 	}
 	// 创建订单
-	a.idn = make([]Identifiers, 0)
+	a.idn = make([]Identifier, 0)
 	for _, v := range a.domain {
-		a.idn = append(a.idn, Identifiers{
+		a.idn = append(a.idn, Identifier{
 			Type:  "dns",
 			Value: v,
 		})
 	}
-	auth, err := a.options.client.NewOrder(a.idn)
+	auth, err := a.options.client.NewOrder(ctx, a.idn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	a.challenges = make([]Challenge, 0)
 	a.finalize = auth.Finalize
 	// 获取授权
 	for _, authorization := range auth.Authorizations {
-		auth, err := a.options.client.GetAuthorization(authorization)
+		auth, err := a.options.client.GetAuthorization(ctx, authorization)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		//获取dns-01的验证信息
 		if auth.Identifier.Type == "dns" {
@@ -84,29 +85,29 @@ func (a *Acme) GetChallenge() error {
 						Authorization: authorization,
 						Challenge:     challenge.Url,
 						Domain:        auth.Identifier.Value,
-						Record:        a.options.client.ChallengeRecord(challenge.Token),
+						Record:        a.options.client.DNS01ChallengeRecord(challenge.Token),
 					})
 				}
 			}
 			break
 		}
 	}
-	return nil
+	return a.challenges, nil
 }
 
 var ErrChallengeInvalid = errors.New("challenge invalid")
 
-func (a *Acme) WaitChallenge() error {
+func (a *Acme) WaitChallenge(ctx context.Context) error {
 	// 等待所有的验证都完成
 	for _, challenge := range a.challenges {
 		// 先发送请求验证
-		_, err := a.options.client.RequestChallenge(challenge.Challenge)
+		_, err := a.options.client.RequestChallenge(ctx, challenge.Challenge)
 		if err != nil {
 			return err
 		}
 		// 轮询验证结果
 		for {
-			auth, err := a.options.client.GetAuthorization(challenge.Authorization)
+			auth, err := a.options.client.GetAuthorization(ctx, challenge.Authorization)
 			if err != nil {
 				return err
 			}
@@ -131,19 +132,19 @@ func (a *Acme) WaitChallenge() error {
 	return nil
 }
 
-func (a *Acme) GetCertificate() ([]byte, error) {
+func (a *Acme) GetCertificate(ctx context.Context) ([]byte, error) {
 	// 创建证书请求
 	csr, _, err := CreateCertificateRequest(a.idn)
 	if err != nil {
 		return nil, err
 	}
 	// 完成订单
-	order, err := a.options.client.Finalize(a.finalize, csr)
+	order, err := a.options.client.Finalize(ctx, a.finalize, csr)
 	if err != nil {
 		return nil, err
 	}
 	// 获取证书
-	cert, err := a.options.client.GetCertificate(order.Certificate)
+	cert, err := a.options.client.GetCertificate(ctx, order.Certificate)
 	if err != nil {
 		return nil, err
 	}

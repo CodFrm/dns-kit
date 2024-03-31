@@ -17,7 +17,7 @@ func TestES256(t *testing.T) {
 	data, err := Encode(NewHeader(ES256(privateKey)),
 		`{"iss":"joe","exp":1300819380,"http://example.com/is_root":true}`)
 	assert.NoError(t, err)
-	payload := map[string]interface{}{}
+	payload := map[string]any{}
 	header := NewHeader(ES256(nil))
 	err = Decode(data, header, &payload)
 	assert.NoError(t, err)

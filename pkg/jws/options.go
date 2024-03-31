@@ -44,6 +44,12 @@ func WithSerialization(s Serialization) EncodeOption {
 	}
 }
 
+func WithUnmarshaler(u Unmarshaler) DecodeOption {
+	return func(o *DecodeOptions) {
+		o.unmarshaler = u
+	}
+}
+
 type Serialization func(header, payload, signature string) string
 
 type Unmarshaler func(data string) (string, string, string, error)

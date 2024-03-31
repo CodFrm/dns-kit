@@ -42,9 +42,9 @@ func Encode(header *Header, payload any, opts ...EncodeOption) (string, error) {
 
 var ErrInvalidSignature = errors.New("invalid signature")
 
-func Decode(token string, header *Header, payload any, opts ...DecodeOption) error {
+func Decode(data string, header *Header, payload any, opts ...DecodeOption) error {
 	options := newDecodeOptions(opts...)
-	headerStr, payloadStr, signatureStr, err := options.unmarshaler(token)
+	headerStr, payloadStr, signatureStr, err := options.unmarshaler(data)
 	if err != nil {
 		return err
 	}

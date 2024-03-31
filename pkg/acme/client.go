@@ -1,7 +1,9 @@
+//nolint:bodyclose
 package acme
 
 import (
 	"bytes"
+	"context"
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/base64"
@@ -31,7 +33,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		options: options,
 	}
 	if options.directory == nil {
-		_, err := client.Directory()
+		_, err := client.Directory(context.Background())
 		if err != nil {
 			return nil, err
 		}
@@ -46,9 +48,9 @@ func (c *Client) GetDirectory() *Directory {
 func (c *Client) SetDirectory(directory *Directory) {
 	c.options.directory = directory
 }
-func (c *Client) Directory() (*Directory, error) {
+func (c *Client) Directory(ctx context.Context) (*Directory, error) {
 	// 请求目录
-	req, err := http.NewRequest(http.MethodGet, c.options.directoryUrl, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.options.directoryUrl, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -57,17 +59,21 @@ func (c *Client) Directory() (*Directory, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	directory := &Directory{}
 	// 解析目录
-	if err := json.NewDecoder(resp.Body).Decode(directory); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	directory := &Directory{}
+	if err := json.Unmarshal(body, directory); err != nil {
 		return nil, err
 	}
 	c.options.directory = directory
 	return directory, nil
 }
 
-func (c *Client) NewNonce() (string, error) {
-	req, err := http.NewRequest(http.MethodHead, c.options.directory.NewNonce, nil)
+func (c *Client) NewNonce(ctx context.Context) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, c.options.directory.NewNonce, nil)
 	if err != nil {
 		return "", err
 	}
@@ -101,8 +107,8 @@ func (c *Client) GetKid() string {
 
 var ErrPrivateKeyRequired = errors.New("private key required")
 
-func (c *Client) newRequest(url string, payload any) (*http.Request, error) {
-	nonce, err := c.NewNonce()
+func (c *Client) newRequest(ctx context.Context, url string, payload any) (*http.Request, error) {
+	nonce, err := c.NewNonce(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +128,7 @@ func (c *Client) newRequest(url string, payload any) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer([]byte(data)))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer([]byte(data)))
 	if err != nil {
 		return nil, err
 	}
@@ -130,8 +136,8 @@ func (c *Client) newRequest(url string, payload any) (*http.Request, error) {
 	return req, nil
 }
 
-func (c *Client) do(url string, payload any) ([]byte, *http.Response, error) {
-	req, err := c.newRequest(url, payload)
+func (c *Client) do(ctx context.Context, url string, payload any) ([]byte, *http.Response, error) {
+	req, err := c.newRequest(ctx, url, payload)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -147,8 +153,8 @@ func (c *Client) do(url string, payload any) ([]byte, *http.Response, error) {
 	return body, resp, nil
 }
 
-func (c *Client) NewAccount(contact []string) (string, error) {
-	body, resp, err := c.do(c.options.directory.NewAccount, map[string]interface{}{
+func (c *Client) NewAccount(ctx context.Context, contact []string) (string, error) {
+	body, resp, err := c.do(ctx, c.options.directory.NewAccount, map[string]any{
 		"termsOfServiceAgreed": true,
 		"contact":              contact,
 	})
@@ -164,26 +170,23 @@ func (c *Client) NewAccount(contact []string) (string, error) {
 	return resp.Header.Get("Location"), nil
 }
 
-type Identifiers struct {
+type Identifier struct {
 	Type  string `json:"type"`
 	Value string `json:"value"`
 }
 
 type NewOrderResponse struct {
-	Status      string    `json:"status"`
-	Expires     time.Time `json:"expires"`
-	NotBefore   time.Time `json:"notBefore"`
-	NotAfter    time.Time `json:"notAfter"`
-	Identifiers []struct {
-		Type  string `json:"type"`
-		Value string `json:"value"`
-	} `json:"identifiers"`
-	Authorizations []string `json:"authorizations"`
-	Finalize       string   `json:"finalize"`
+	Status         string       `json:"status"`
+	Expires        time.Time    `json:"expires"`
+	NotBefore      time.Time    `json:"notBefore"`
+	NotAfter       time.Time    `json:"notAfter"`
+	Identifiers    []Identifier `json:"identifiers"`
+	Authorizations []string     `json:"authorizations"`
+	Finalize       string       `json:"finalize"`
 }
 
-func (c *Client) NewOrder(identifiers []Identifiers) (*NewOrderResponse, error) {
-	body, resp, err := c.do(c.options.directory.NewOrder, map[string]interface{}{
+func (c *Client) NewOrder(ctx context.Context, identifiers []Identifier) (*NewOrderResponse, error) {
+	body, resp, err := c.do(ctx, c.options.directory.NewOrder, map[string]any{
 		"identifiers": identifiers,
 	})
 	if err != nil {
@@ -199,23 +202,22 @@ func (c *Client) NewOrder(identifiers []Identifiers) (*NewOrderResponse, error) 
 	return order, nil
 }
 
-type AuthorizationResponse struct {
-	Identifier struct {
-		Type  string `json:"type"`
-		Value string `json:"value"`
-	} `json:"identifier"`
-	Status     string    `json:"status"`
-	Expires    time.Time `json:"expires"`
-	Challenges []struct {
-		Type   string `json:"type"`
-		Status string `json:"status"`
-		Url    string `json:"url"`
-		Token  string `json:"token"`
-	} `json:"challenges"`
+type AuthorizationChallenge struct {
+	Type   string `json:"type"`
+	Status string `json:"status"`
+	Url    string `json:"url"`
+	Token  string `json:"token"`
 }
 
-func (c *Client) GetAuthorization(url string) (*AuthorizationResponse, error) {
-	body, resp, err := c.do(url, nil)
+type AuthorizationResponse struct {
+	Identifier Identifier               `json:"identifier"`
+	Status     string                   `json:"status"`
+	Expires    time.Time                `json:"expires"`
+	Challenges []AuthorizationChallenge `json:"challenges"`
+}
+
+func (c *Client) GetAuthorization(ctx context.Context, url string) (*AuthorizationResponse, error) {
+	body, resp, err := c.do(ctx, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -242,8 +244,8 @@ type ChallengeResponse struct {
 }
 
 // GetChallenge 获取挑战
-func (c *Client) GetChallenge(url string) (*ChallengeResponse, error) {
-	body, resp, err := c.do(url, nil)
+func (c *Client) GetChallenge(ctx context.Context, url string) (*ChallengeResponse, error) {
+	body, resp, err := c.do(ctx, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -260,8 +262,8 @@ func (c *Client) GetChallenge(url string) (*ChallengeResponse, error) {
 // RequestChallenge 请求挑战
 // 当你当http-01/dns-01记录准备好后，调用此接口
 // 然后使用GetChallenge或者GetAuthorization轮询查看状态
-func (c *Client) RequestChallenge(url string) (*ChallengeResponse, error) {
-	body, resp, err := c.do(url, "{}")
+func (c *Client) RequestChallenge(ctx context.Context, url string) (*ChallengeResponse, error) {
+	body, resp, err := c.do(ctx, url, "{}")
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +286,7 @@ func (c *Client) keyAuthorization(token string) string {
 	return token + "." + c.thumbprint()
 }
 
-func (c *Client) ChallengeRecord(token string) string {
+func (c *Client) DNS01ChallengeRecord(token string) string {
 	hash := sha256.Sum256([]byte(c.keyAuthorization(token)))
 	return base64.RawURLEncoding.EncodeToString(hash[:])
 }
@@ -301,8 +303,8 @@ type FinalizeResponse struct {
 	Certificate    string   `json:"certificate"`
 }
 
-func (c *Client) Finalize(url string, csr []byte) (*FinalizeResponse, error) {
-	body, resp, err := c.do(url, map[string]interface{}{
+func (c *Client) Finalize(ctx context.Context, url string, csr []byte) (*FinalizeResponse, error) {
+	body, resp, err := c.do(ctx, url, map[string]any{
 		"csr": base64.RawURLEncoding.EncodeToString(csr),
 	})
 	if err != nil {
@@ -318,8 +320,8 @@ func (c *Client) Finalize(url string, csr []byte) (*FinalizeResponse, error) {
 	return finalize, nil
 }
 
-func (c *Client) GetCertificate(url string) ([]byte, error) {
-	body, resp, err := c.do(url, nil)
+func (c *Client) GetCertificate(ctx context.Context, url string) ([]byte, error) {
+	body, resp, err := c.do(ctx, url, nil)
 	if err != nil {
 		return nil, err
 	}

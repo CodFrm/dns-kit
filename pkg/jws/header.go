@@ -7,22 +7,27 @@ import (
 
 type Header struct {
 	alg    Algorithm
-	values map[string]interface{}
+	values map[string]any
 }
 
 func NewHeader(alg Algorithm) *Header {
 	return &Header{
 		alg:    alg,
-		values: map[string]interface{}{},
+		values: map[string]any{},
 	}
 }
 
-func (h *Header) Set(key string, value interface{}) *Header {
+func (h *Header) SetAlg(alg Algorithm) *Header {
+	h.alg = alg
+	return h
+}
+
+func (h *Header) Set(key string, value any) *Header {
 	h.values[key] = value
 	return h
 }
 
-func (h *Header) Get(key string) interface{} {
+func (h *Header) Get(key string) any {
 	return h.values[key]
 }
 

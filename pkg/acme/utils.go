@@ -7,7 +7,7 @@ import (
 	"crypto/x509"
 )
 
-func CreateCertificateRequest(auth []Identifiers) ([]byte, *ecdsa.PrivateKey, error) {
+func CreateCertificateRequest(auth []Identifier) ([]byte, *ecdsa.PrivateKey, error) {
 	csr := x509.CertificateRequest{}
 	for _, v := range auth {
 		switch v.Type {

@@ -109,7 +109,7 @@ func (e *es256) PreVerify(header *Header) error {
 		Y:     nil,
 	}
 	// 解析x y
-	jwk, ok := header.Get("jwk").(map[string]interface{})
+	jwk, ok := header.Get("jwk").(map[string]any)
 	if !ok {
 		return errors.New("jwk not found")
 	}
