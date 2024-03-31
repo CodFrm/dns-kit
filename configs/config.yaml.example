@@ -1,0 +1,20 @@
+broker:
+    type: event_bus
+db:
+    driver: sqlite
+    dsn: data.db
+    prefix:
+debug: true
+env: dev
+http:
+    address:
+        - :8080
+logger:
+    level: info
+    disableConsole: false # 是否禁用控制台输出
+    logFile:
+        enable: true
+        errorFilename: ./runtime/logs/cago.err.log
+        filename: ./runtime/logs/cago.log
+source: file
+version: 1.0.0

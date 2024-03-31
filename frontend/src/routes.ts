@@ -23,7 +23,43 @@ export const routes: IRoute[] = [
     ],
   },
   {
-    name: 'Example',
+    name: 'CDN管理',
+    key: 'example',
+  },
+  {
+    name: '域名解析',
+    key: 'example',
+    children: [
+      {
+        name: '我的域名',
+        key: 'example',
+      },
+      {
+        name: '域名监控',
+        key: 'example',
+      },
+    ],
+  },
+  {
+    name: '证书管理',
+    key: 'example',
+    children: [
+      {
+        name: '证书签发',
+        key: 'example',
+      },
+      {
+        name: '证书托管',
+        key: 'example',
+      },
+    ],
+  },
+  {
+    name: '厂商管理',
+    key: 'example',
+  },
+  {
+    name: '系统设置',
     key: 'example',
   },
 ];

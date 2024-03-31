@@ -1,0 +1,117 @@
+basePath: /api/v1
+definitions:
+  BadRequest:
+    properties:
+      code:
+        description: 错误码
+        format: int32
+        type: integer
+      msg:
+        description: 错误信息
+        type: string
+    type: object
+  user.CurrentUserResponse:
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
+  user.LoginRequest:
+    properties:
+      password:
+        description: 密码
+        type: string
+      username:
+        description: 用户名
+        type: string
+    type: object
+  user.LoginResponse:
+    type: object
+  user.LogoutResponse:
+    type: object
+info:
+  title: api文档
+  version: "1.0"
+paths:
+  /user/current:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前用户
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.CurrentUserResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取当前用户
+      tags:
+      - user/login
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: 登录
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.LoginResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 登录
+      tags:
+      - user/login
+  /user/logout:
+    get:
+      consumes:
+      - application/json
+      description: 登出
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.LogoutResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 登出
+      tags:
+      - user/login
+swagger: "2.0"

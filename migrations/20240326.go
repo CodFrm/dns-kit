@@ -9,6 +9,7 @@ func T20240326() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "20240326",
 		Migrate: func(tx *gorm.DB) error {
+			// 初始化用户
 			return nil
 		},
 		Rollback: func(tx *gorm.DB) error {
