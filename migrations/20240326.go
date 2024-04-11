@@ -16,12 +16,12 @@ func T20240326() *gormigrate.Migration {
 		Migrate: func(tx *gorm.DB) error {
 			// 初始化用户
 			ctx := context.Background()
-			ctx = db.ContextWithDB(ctx, tx)
+			ctx = db.WithContextDB(ctx, tx)
 			if err := tx.Migrator().AutoMigrate(&user_entity.User{}); err != nil {
 				return err
 			}
 			// 添加admin用户
-			_, err := user_svc.Login().Register(ctx, &user.RegisterRequest{
+			_, err := user_svc.User().Register(ctx, &user.RegisterRequest{
 				Username: "admin",
 				Password: "123456",
 			})

@@ -35,6 +35,8 @@ github.com/cloudflare/cloudflare-go v0.92.0 h1:ltJvGvqZ4G6Fm2hHOYZ5RWpJQcrM0oDrs
 github.com/cloudflare/cloudflare-go v0.92.0/go.mod h1:nUqvBUUDRxNzsDSQjbqUNWHEIYAoUlgRmcAzMKlFdKs=
 github.com/codfrm/cago v0.0.0-20240410132802-a47d6e24c0c5 h1:OezHVgIOJnLgXq1nnogQl2WOit7j/jamUZYG1WHyKuw=
 github.com/codfrm/cago v0.0.0-20240410132802-a47d6e24c0c5/go.mod h1:0FYGBNndi3X3EPUXFfA0CbKncBKqubgA1izQVPnGtuA=
+github.com/codfrm/cago v0.0.0-20240411095144-307fc275b058 h1:tK9ybI34r0w7CQFdpD6DxXw7eEL4nT1yfE3GlsXiKLk=
+github.com/codfrm/cago v0.0.0-20240411095144-307fc275b058/go.mod h1:0FYGBNndi3X3EPUXFfA0CbKncBKqubgA1izQVPnGtuA=
 github.com/coreos/go-semver v0.3.1 h1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=
 github.com/coreos/go-semver v0.3.1/go.mod h1:irMmmIw/7yzSRPWryHsK7EYSg09caPQL03VsM8rvUec=
 github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=

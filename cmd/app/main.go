@@ -29,6 +29,7 @@ func main() {
 		Registry(component.Core()).
 		Registry(component.Database()).
 		Registry(component.Broker()).
+		Registry(component.Cache()).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
 		})).

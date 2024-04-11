@@ -17,10 +17,10 @@ import (
 	"strconv"
 )
 
-type LoginSvc interface {
+type UserSvc interface {
 	// Register 注册
 	Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error)
-	// Login 登录
+	// User 登录
 	Login(ctx *gin.Context, req *api.LoginRequest) error
 	// Logout 登出
 	Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error)
@@ -36,17 +36,17 @@ type LoginSvc interface {
 	RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) error
 }
 
-type loginSvc struct {
+type userSvc struct {
 }
 
-var defaultLogin = &loginSvc{}
+var defaultUser = &userSvc{}
 
-func Login() LoginSvc {
-	return defaultLogin
+func User() UserSvc {
+	return defaultUser
 }
 
 // Register 注册
-func (l *loginSvc) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
+func (l *userSvc) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
 	// 查找相同用户名
 	user, err := user_repo.User().FindByUsername(ctx, req.Username)
 	if err != nil {
@@ -66,14 +66,14 @@ func (l *loginSvc) Register(ctx context.Context, req *api.RegisterRequest) (*api
 	return &api.RegisterResponse{}, nil
 }
 
-// Login 登录
-func (l *loginSvc) Login(ctx *gin.Context, req *api.LoginRequest) error {
+// User 登录
+func (l *userSvc) Login(ctx *gin.Context, req *api.LoginRequest) error {
 	_, err := authn.Default().LoginByPassword(ctx, req.Username, req.Password)
 	return err
 }
 
 // Logout 登出
-func (l *loginSvc) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
+func (l *userSvc) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
 	err := authn.Default().Logout(ctx)
 	if err != nil {
 		return nil, err
@@ -81,12 +81,12 @@ func (l *loginSvc) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.Logout
 	return &api.LogoutResponse{}, nil
 }
 
-func (l *loginSvc) Ctx(ctx context.Context) *model.AuthInfo {
+func (l *userSvc) Ctx(ctx context.Context) *model.AuthInfo {
 	user, _ := ctx.Value(model.AuthInfo{}).(*model.AuthInfo)
 	return user
 }
 
-func (l *loginSvc) WithUser(ctx context.Context, userId int64) (context.Context, error) {
+func (l *userSvc) WithUser(ctx context.Context, userId int64) (context.Context, error) {
 	user, err := user_repo.User().Find(ctx, userId)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (l *loginSvc) WithUser(ctx context.Context, userId int64) (context.Context,
 		model.AuthInfo{}, authInfo), nil
 }
 
-func (l *loginSvc) Middleware() authn.Middleware {
+func (l *userSvc) Middleware() authn.Middleware {
 	return func(ctx *gin.Context, userId string, session *sessions.Session) error {
 		nUserId, err := strconv.ParseInt(userId, 10, 64)
 		if err != nil {
@@ -127,7 +127,7 @@ func (l *loginSvc) Middleware() authn.Middleware {
 }
 
 // CurrentUser 当前登录用户
-func (l *loginSvc) CurrentUser(ctx context.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error) {
+func (l *userSvc) CurrentUser(ctx context.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error) {
 	user := l.Ctx(ctx)
 	return &api.CurrentUserResponse{
 		Username: user.Username,
@@ -135,6 +135,6 @@ func (l *loginSvc) CurrentUser(ctx context.Context, req *api.CurrentUserRequest)
 }
 
 // RefreshToken 刷新token
-func (l *loginSvc) RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) error {
+func (l *userSvc) RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) error {
 	return authn.Default().RefreshSession(ctx, req.RefreshToken)
 }
