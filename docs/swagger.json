@@ -8,7 +8,7 @@
     "paths": {
         "/user/current": {
             "get": {
-                "description": "获取当前用户",
+                "description": "当前登录用户",
                 "consumes": [
                     "application/json"
                 ],
@@ -18,7 +18,7 @@
                 "tags": [
                     "user/login"
                 ],
-                "summary": "获取当前用户",
+                "summary": "当前登录用户",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -131,6 +131,102 @@
                     }
                 }
             }
+        },
+        "/user/refresh": {
+            "post": {
+                "description": "刷新token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user/login"
+                ],
+                "summary": "刷新token",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.RefreshTokenResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/register": {
+            "post": {
+                "description": "注册",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user/login"
+                ],
+                "summary": "注册",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/user.RegisterResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -151,9 +247,6 @@
         "user.CurrentUserResponse": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "username": {
                     "type": "string"
                 }
@@ -173,9 +266,46 @@
             }
         },
         "user.LoginResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                }
+            }
         },
         "user.LogoutResponse": {
+            "type": "object"
+        },
+        "user.RefreshTokenRequest": {
+            "type": "object",
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.RefreshTokenResponse": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.RegisterRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "user.RegisterResponse": {
             "type": "object"
         }
     }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/codfrm/dns-kit/internal/repository/user_repo"
 	"log"
 
 	"github.com/codfrm/cago"
@@ -20,6 +21,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("load config err: %v", err)
 	}
+
+	// 注册储存实例
+	user_repo.RegisterUser(user_repo.NewUser())
+
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).
 		Registry(component.Database()).
