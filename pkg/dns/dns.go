@@ -6,7 +6,7 @@ import "context"
 type DomainManager interface {
 	// GetDomainList 获取域名列表
 	GetDomainList(ctx context.Context) ([]*Domain, error)
-	// BuildDNSManager 构建dns管理器
+	// BuildDNSManager 构建dns域名管理器
 	BuildDNSManager(ctx context.Context, domain *Domain) (Manager, error)
 }
 
