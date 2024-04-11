@@ -49,7 +49,7 @@ func (t *DnsPod) BuildDNSManager(ctx context.Context, domain *dns.Domain) (dns.M
 
 func NewTencentCloud(SecretId, SecretKey string) (dns.DomainManager, error) {
 	credential := common.NewCredential(
-		SecretKey,
+		SecretId,
 		SecretKey,
 	)
 	// 实例化一个client选项，可选的，没有特殊需求可以跳过
