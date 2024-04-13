@@ -8,6 +8,8 @@ type DomainManager interface {
 	GetDomainList(ctx context.Context) ([]*Domain, error)
 	// BuildDNSManager 构建dns域名管理器
 	BuildDNSManager(ctx context.Context, domain *Domain) (Manager, error)
+	// UserDetails 获取用户信息
+	UserDetails(ctx context.Context) (*User, error)
 }
 
 // Manager dns管理器

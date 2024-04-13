@@ -45,3 +45,8 @@ type Domain struct {
 	ID     string
 	Domain string
 }
+
+type User struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+}

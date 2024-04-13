@@ -11,4 +11,8 @@ var zhCN = map[int]string{
 	UserNotFound:          "用户不存在",
 	UserNotLogin:          "用户未登录",
 	UsernameAlreadyExists: "用户名已存在",
+
+	DNSProviderNotSupport:  "DNS提供商不支持",
+	DNSProviderSecretError: "DNS提供商密钥错误",
+	DNSProviderExist:       "DNS提供商已存在",
 }

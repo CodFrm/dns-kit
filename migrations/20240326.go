@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/dns-kit/internal/api/user"
+	"github.com/codfrm/dns-kit/internal/model/entity/dns_entity"
+	"github.com/codfrm/dns-kit/internal/model/entity/dns_provider_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/user_entity"
 	"github.com/codfrm/dns-kit/internal/service/user_svc"
 	"github.com/go-gormigrate/gormigrate/v2"
@@ -17,8 +19,15 @@ func T20240326() *gormigrate.Migration {
 			// 初始化用户
 			ctx := context.Background()
 			ctx = db.WithContextDB(ctx, tx)
-			if err := tx.Migrator().AutoMigrate(&user_entity.User{}); err != nil {
-				return err
+			entities := []any{
+				&user_entity.User{},
+				&dns_entity.Dns{},
+				&dns_provider_entity.DnsProvider{},
+			}
+			for _, entity := range entities {
+				if err := tx.Migrator().AutoMigrate(entity); err != nil {
+					return err
+				}
 			}
 			// 添加admin用户
 			_, err := user_svc.User().Register(ctx, &user.RegisterRequest{

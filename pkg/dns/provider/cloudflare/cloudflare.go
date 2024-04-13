@@ -43,3 +43,14 @@ func (c *Cloudflare) toDomain(zone cloudflare.Zone) *dns.Domain {
 func (c *Cloudflare) BuildDNSManager(ctx context.Context, domain *dns.Domain) (dns.Manager, error) {
 	return NewDNSManager(c.api, cloudflare.ZoneIdentifier(domain.ID))
 }
+
+func (c *Cloudflare) UserDetails(ctx context.Context) (*dns.User, error) {
+	user, err := c.api.UserDetails(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &dns.User{
+		ID:       user.ID,
+		Username: user.Username,
+	}, nil
+}

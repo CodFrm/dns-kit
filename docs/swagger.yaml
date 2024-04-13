@@ -10,6 +10,91 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  dns.CreateProviderRequest:
+    properties:
+      name:
+        type: string
+      platform:
+        $ref: '#/definitions/dns_provider_entity.DnsPlatform'
+      secret:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  dns.CreateProviderResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dns.Item:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      platform:
+        type: string
+    type: object
+  dns.ListProviderResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/dns.ProviderItem'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  dns.ListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/dns.Item'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  dns.ProviderItem:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dns_provider_entity.DnsPlatform:
+    description: |-
+      DnsPlatform enum type:
+      - DnsPlatformCloudflare: cloudflare
+      - DnsPlatformDnsPod: dnspod
+    enum:
+    - cloudflare
+    - dnspod
+    type: string
+  httputils.PageRequest:
+    properties:
+      order:
+        description: Deprecated 请使用方法GetOrder
+        type: string
+      page:
+        description: Deprecated 请使用方法GetPage
+        type: integer
+      size:
+        description: Deprecated 请使用方法GetSize
+        type: integer
+      sort:
+        description: Deprecated 请使用方法GetSort
+        type: string
+    type: object
+  httputils.PageResponse:
+    properties:
+      list:
+        items:
+          type: any
+        type: array
+      total:
+        type: integer
+    type: object
   user.CurrentUserResponse:
     properties:
       username:
@@ -56,6 +141,85 @@ info:
   title: api文档
   version: "1.0"
 paths:
+  /dns:
+    get:
+      consumes:
+      - application/json
+      description: 获取dns列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/dns.ListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取dns列表
+      tags:
+      - dns
+  /dns/provider:
+    get:
+      consumes:
+      - application/json
+      description: 获取dns提供商列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/dns.ListProviderResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取dns提供商列表
+      tags:
+      - dns/provider
+    post:
+      consumes:
+      - application/json
+      description: 创建dns提供商
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/dns.CreateProviderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/dns.CreateProviderResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建dns提供商
+      tags:
+      - dns/provider
   /user/current:
     get:
       consumes:
@@ -80,7 +244,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 当前登录用户
       tags:
-      - user/login
+      - user
   /user/login:
     post:
       consumes:
@@ -110,7 +274,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 登录
       tags:
-      - user/login
+      - user
   /user/logout:
     get:
       consumes:
@@ -135,7 +299,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 登出
       tags:
-      - user/login
+      - user
   /user/refresh:
     post:
       consumes:
@@ -165,7 +329,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 刷新token
       tags:
-      - user/login
+      - user
   /user/register:
     post:
       consumes:
@@ -195,5 +359,5 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 注册
       tags:
-      - user/login
+      - user
 swagger: "2.0"

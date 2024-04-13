@@ -2,11 +2,10 @@ package api
 
 import (
 	"context"
-	"github.com/codfrm/cago/pkg/iam/authn"
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/codfrm/dns-kit/docs"
+	"github.com/codfrm/dns-kit/internal/controller/dns_ctr"
 	"github.com/codfrm/dns-kit/internal/controller/user_ctr"
-	"github.com/codfrm/dns-kit/internal/repository/user_repo"
 	"github.com/codfrm/dns-kit/internal/service/user_svc"
 )
 
@@ -15,26 +14,37 @@ import (
 // @version  1.0
 // @BasePath /api/v1
 func Router(ctx context.Context, root *mux.Router) error {
-	// 注册认证模块
-	auth := authn.New(user_repo.User(),
-		authn.WithMiddleware(user_svc.User().Middleware()),
-	)
-	authn.SetDefault(auth)
-
 	r := root.Group("/api/v1")
 
-	userLoginCtr := user_ctr.NewUser()
+	userCtr := user_ctr.NewUser()
 	{
 		// 绑定路由
-		r.Group("/").Bind(
-			userLoginCtr.Register,
-			userLoginCtr.Login,
+		r.Group("/", user_svc.User().AuditMiddleware("user")).Bind(
+			userCtr.Register,
+			userCtr.Login,
 		)
 
-		r.Group("/", auth.Middleware(true)).Bind(
-			userLoginCtr.CurrentUser,
-			userLoginCtr.Logout,
-			userLoginCtr.RefreshToken,
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
+			userCtr.CurrentUser,
+			userCtr.Logout,
+			userCtr.RefreshToken,
+		)
+	}
+
+	dnsCtr := dns_ctr.NewDns()
+	{
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
+			dnsCtr.List,
+		)
+	}
+	dnsProviderCtr := dns_ctr.NewProvider()
+	{
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
+			dnsProviderCtr.ListProvider,
+		)
+
+		r.Group("/", user_svc.User().Middleware(true), user_svc.User().AuditMiddleware("dns_provider")).Bind(
+			dnsProviderCtr.CreateProvider,
 		)
 	}
 
