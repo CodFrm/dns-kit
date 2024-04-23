@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/cloudflare/cloudflare-go v0.92.0
-	github.com/codfrm/cago v0.0.0-20240412135159-8b54c8a10cde
+	github.com/codfrm/cago v0.0.0-20240413013143-a8f0c62bb65f
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-gormigrate/gormigrate/v2 v2.1.2
 	github.com/jarcoal/httpmock v1.3.1
