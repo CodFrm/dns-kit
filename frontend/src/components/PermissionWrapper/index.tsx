@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { GlobalState } from '@/store';
+import { GlobalState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import authentication, { AuthParams } from '@/utils/authentication';
 

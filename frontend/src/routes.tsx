@@ -1,5 +1,14 @@
 import auth, { AuthParams } from '@/utils/authentication';
 import { useEffect, useMemo, useState } from 'react';
+import { Route, Routes as ReactRoutes, Navigate } from 'react-router-dom';
+import Login from './pages/login';
+import PageLayout, { getFlattenRoutes } from './layout';
+import { useSelector } from 'react-redux';
+import { GlobalState } from './store/store';
+import lazyload from './utils/lazyload';
+import Example from './pages/example';
+import React from 'react';
+import Exception403 from './pages/exception/403';
 
 export type IRoute = AuthParams & {
   name: string;
@@ -134,6 +143,36 @@ const useRoute = (userPermission): [IRoute[], string] => {
   }, [permissionRoute]);
 
   return [permissionRoute, defaultRoute];
+};
+
+export const Routes = () => {
+  const { settings, userLoading, userInfo } = useSelector(
+    (state: GlobalState) => state,
+  );
+  const [routes, defaultRoute] = useRoute(userInfo?.permissions);
+
+  const flattenRoutes = useMemo(() => getFlattenRoutes(routes) || [], [routes]);
+
+  return (
+    <React.Fragment>
+      <ReactRoutes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<PageLayout />}>
+          {flattenRoutes.map((route, index) => {
+            return (
+              <Route
+                key={index}
+                path={`${route.key}`}
+                element={<route.component />}
+              />
+            );
+          })}
+          <Route index element={<Navigate to={`${defaultRoute}`} />} />
+          <Route path="*" element={<Exception403 />} />
+        </Route>
+      </ReactRoutes>
+    </React.Fragment>
+  );
 };
 
 export default useRoute;

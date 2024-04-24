@@ -3,7 +3,7 @@ import { Trigger, Typography } from '@arco-design/web-react';
 import { SketchPicker } from 'react-color';
 import { generate, getRgbStr } from '@arco-design/color';
 import { useSelector, useDispatch } from 'react-redux';
-import { GlobalState } from '../../store';
+import { GlobalState } from '../../store/store';
 import useLocale from '@/utils/useLocale';
 import styles from './style/color-panel.module.less';
 

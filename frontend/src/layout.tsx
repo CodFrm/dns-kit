@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Layout, Menu, Breadcrumb, Spin } from '@arco-design/web-react';
 import cs from 'classnames';
 import {
@@ -8,7 +8,6 @@ import {
   IconMenuFold,
   IconMenuUnfold,
 } from '@arco-design/web-react/icon';
-import { useSelector } from 'react-redux';
 import qs from 'query-string';
 import NProgress from 'nprogress';
 import Navbar from './components/NavBar';
@@ -18,8 +17,9 @@ import { isArray } from './utils/is';
 import useLocale from './utils/useLocale';
 import getUrlParams from './utils/getUrlParams';
 import lazyload from './utils/lazyload';
-import { GlobalState } from './store';
 import styles from './style/layout.module.less';
+import { selectGlobal } from './store/global';
+import { useAppSelector } from './store/hooks';
 
 const MenuItem = Menu.Item;
 const SubMenu = Menu.SubMenu;
@@ -38,7 +38,7 @@ function getIconFromKey(key) {
   }
 }
 
-function getFlattenRoutes(routes) {
+export function getFlattenRoutes(routes) {
   const mod = import.meta.glob('./pages/**/[a-z[]*.tsx');
   const res = [];
   function travel(_routes) {
@@ -57,13 +57,12 @@ function getFlattenRoutes(routes) {
 
 function PageLayout() {
   const urlParams = getUrlParams();
-  const history = useHistory();
-  const pathname = history.location.pathname;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pathname = location.pathname;
   const currentComponent = qs.parseUrl(pathname).url.slice(1);
   const locale = useLocale();
-  const { settings, userLoading, userInfo } = useSelector(
-    (state: GlobalState) => state
-  );
+  const { settings, userLoading, userInfo } = useAppSelector(selectGlobal);
 
   const [routes, defaultRoute] = useRoute(userInfo?.permissions);
   const defaultSelectedKeys = [currentComponent || defaultRoute];
@@ -96,7 +95,7 @@ function PageLayout() {
     const preload = component.preload();
     NProgress.start();
     preload.then(() => {
-      history.push(currentRoute.path ? currentRoute.path : `/${key}`);
+      navigate({ pathname: currentRoute.path ? currentRoute.path : `/${key}` });
       NProgress.done();
     });
   }
@@ -123,7 +122,7 @@ function PageLayout() {
 
         routeMap.current.set(
           `/${route.key}`,
-          breadcrumb ? [...parentNode, route.name] : []
+          breadcrumb ? [...parentNode, route.name] : [],
         );
 
         const visibleChildren = (route.children || []).filter((child) => {
@@ -131,7 +130,7 @@ function PageLayout() {
           if (ignore || route.ignore) {
             routeMap.current.set(
               `/${child.key}`,
-              breadcrumb ? [...parentNode, route.name, child.name] : []
+              breadcrumb ? [...parentNode, route.name, child.name] : [],
             );
           }
 
@@ -236,24 +235,7 @@ function PageLayout() {
                 </div>
               )}
               <Content>
-                <Switch>
-                  {flattenRoutes.map((route, index) => {
-                    return (
-                      <Route
-                        key={index}
-                        path={`/${route.key}`}
-                        component={route.component}
-                      />
-                    );
-                  })}
-                  <Route exact path="/">
-                    <Redirect to={`/${defaultRoute}`} />
-                  </Route>
-                  <Route
-                    path="*"
-                    component={lazyload(() => import('./pages/exception/403'))}
-                  />
-                </Switch>
+                <Outlet />
               </Content>
             </div>
             {showFooter && <Footer />}

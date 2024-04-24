@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Switch, Divider, InputNumber } from '@arco-design/web-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { GlobalState } from '../../store';
+import { GlobalState } from '../../store/store';
 import useLocale from '../../utils/useLocale';
 import styles from './style/block.module.less';
 

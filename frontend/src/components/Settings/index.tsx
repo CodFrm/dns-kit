@@ -3,7 +3,7 @@ import { Drawer, Alert, Message } from '@arco-design/web-react';
 import { IconSettings } from '@arco-design/web-react/icon';
 import copy from 'copy-to-clipboard';
 import { useSelector } from 'react-redux';
-import { GlobalState } from '../../store';
+import { GlobalState } from '../../store/store';
 import Block from './block';
 import ColorPanel from './color';
 import IconButton from '../NavBar/IconButton';

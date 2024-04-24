@@ -24,7 +24,7 @@ import {
   IconTag,
 } from '@arco-design/web-react/icon';
 import { useSelector, useDispatch } from 'react-redux';
-import { GlobalState } from '@/store';
+import { GlobalState } from '@/store/store';
 import { GlobalContext } from '@/context';
 import useLocale from '@/utils/useLocale';
 import Logo from '@/assets/logo.svg';
