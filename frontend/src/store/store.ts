@@ -5,9 +5,10 @@ import {
   configureStore,
 } from '@reduxjs/toolkit';
 import { globalSlice } from './global';
-import { apiSlice } from '@/api/api';
+import { rtkQueryErrorHandler } from '@/api/api';
+import { userApiSlice } from '@/api/user';
 
-const rootReducer = combineSlices(globalSlice, apiSlice);
+const rootReducer = combineSlices(globalSlice, userApiSlice);
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -16,7 +17,10 @@ const store = configureStore({
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of `rtk-query`.
   middleware: (getDefaultMiddleware) => {
-    return getDefaultMiddleware().concat(apiSlice.middleware);
+    return getDefaultMiddleware().concat(
+      userApiSlice.middleware,
+      rtkQueryErrorHandler,
+    );
   },
 });
 

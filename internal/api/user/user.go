@@ -42,7 +42,7 @@ type CurrentUserResponse struct {
 
 // LogoutRequest 登出
 type LogoutRequest struct {
-	mux.Meta `path:"/user/logout" method:"GET"`
+	mux.Meta `path:"/user/logout" method:"DELETE"`
 }
 
 type LogoutResponse struct {

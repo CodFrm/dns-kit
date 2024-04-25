@@ -4,11 +4,11 @@ import { Route, Routes as ReactRoutes, Navigate } from 'react-router-dom';
 import Login from './pages/login';
 import PageLayout, { getFlattenRoutes } from './layout';
 import { useSelector } from 'react-redux';
-import { GlobalState } from './store/store';
-import lazyload from './utils/lazyload';
-import Example from './pages/example';
 import React from 'react';
 import Exception403 from './pages/exception/403';
+import { GlobalState, updateUserInfo, userLoading } from './store/global';
+import { checkLogin, userLogout } from './utils/user';
+import { useLazyCurrentUserQuery } from './api/user';
 
 export type IRoute = AuthParams & {
   name: string;
@@ -146,12 +146,34 @@ const useRoute = (userPermission): [IRoute[], string] => {
 };
 
 export const Routes = () => {
-  const { settings, userLoading, userInfo } = useSelector(
-    (state: GlobalState) => state,
-  );
+  const [currentUser, { data }] = useLazyCurrentUserQuery();
+
+  const { settings, userInfo } = useSelector((state: GlobalState) => state);
   const [routes, defaultRoute] = useRoute(userInfo?.permissions);
 
   const flattenRoutes = useMemo(() => getFlattenRoutes(routes) || [], [routes]);
+
+  function fetchUserInfo() {
+    userLoading();
+    currentUser()
+      .unwrap()
+      .then((res) => {
+        updateUserInfo(res.data);
+      })
+      .catch((e) => {
+        if (e.status == 401) {
+          userLogout();
+        }
+      });
+  }
+
+  useEffect(() => {
+    if (checkLogin()) {
+      fetchUserInfo();
+    } else if (window.location.pathname.replace(/\//g, '') !== 'login') {
+      window.location.pathname = '/login';
+    }
+  }, []);
 
   return (
     <React.Fragment>
