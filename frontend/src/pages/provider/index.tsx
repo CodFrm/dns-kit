@@ -26,6 +26,9 @@ const columns: ColumnProps[] = [
     key: 'platform',
     title: '平台',
     dataIndex: 'platform',
+    render(col) {
+      return { tencent: '腾讯云' }[col];
+    },
   },
   {
     key: 'support',
@@ -93,7 +96,6 @@ function Provider() {
           columns={columns}
           data={data}
           border={{
-            wrapper: true,
           }}
         />
       </div>

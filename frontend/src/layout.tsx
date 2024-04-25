@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { Layout, Menu, Breadcrumb, Spin, Icon } from '@arco-design/web-react';
+import { Layout, Menu, Breadcrumb, Spin } from '@arco-design/web-react';
 import cs from 'classnames';
 import {
   IconDashboard,
@@ -20,7 +20,9 @@ import getUrlParams from './utils/getUrlParams';
 import lazyload from './utils/lazyload';
 import styles from './style/layout.module.less';
 import { selectGlobal } from './store/global';
+import { RiLockLine, RiServerLine } from 'react-icons/ri';
 import { useAppSelector } from './store/hooks';
+import { FaNetworkWired } from 'react-icons/fa';
 
 const MenuItem = Menu.Item;
 const SubMenu = Menu.SubMenu;
@@ -36,6 +38,12 @@ function getIconFromKey(key) {
       return <IconTag className={styles.icon} />;
     case 'provider':
       return <IconCloud className={styles.icon} />;
+    case 'domain':
+      return <RiServerLine className={styles.icon} />;
+    case 'cdn':
+      return <FaNetworkWired className={styles.icon} />;
+    case 'certificate':
+      return <RiLockLine className={styles.icon} />;
     default:
       return <div className={styles['icon-empty']} />;
   }
@@ -85,7 +93,7 @@ function PageLayout() {
 
   const currentRouteKey = pathname.substring(
     1,
-    pathname.indexOf('/', 1) == -1 ? pathname.length : null,
+    pathname.indexOf('/', 1) == -1 ? pathname.length : pathname.indexOf('/', 1),
   );
 
   const navbarHeight = 60;

@@ -39,33 +39,33 @@ export const routes: IRoute[] = [
   },
   {
     name: 'CDN管理',
-    key: 'example',
+    key: 'cdn',
   },
   {
     name: '域名解析',
-    key: 'example',
+    key: 'domain',
     children: [
       {
         name: '我的域名',
-        key: 'example',
+        key: 'domain/my',
       },
       {
         name: '域名监控',
-        key: 'example',
+        key: 'domain/monitor',
       },
     ],
   },
   {
     name: '证书管理',
-    key: 'example',
+    key: 'certificate',
     children: [
       {
         name: '证书签发',
-        key: 'example',
+        key: 'certificate/apply',
       },
       {
         name: '证书托管',
-        key: 'example',
+        key: 'certificate/hosting',
       },
     ],
   },
