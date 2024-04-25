@@ -1,16 +1,16 @@
-package dns_svc
+package provider_svc
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
-	"github.com/codfrm/dns-kit/internal/model/entity/dns_provider_entity"
-	"github.com/codfrm/dns-kit/internal/pkg/code"
-	"github.com/codfrm/dns-kit/internal/repository/dns_provider_repo"
 	"time"
 
-	api "github.com/codfrm/dns-kit/internal/api/dns"
+	"github.com/codfrm/cago/pkg/consts"
+	"github.com/codfrm/cago/pkg/i18n"
+	api "github.com/codfrm/dns-kit/internal/api/provider"
+	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
+	"github.com/codfrm/dns-kit/internal/pkg/code"
+	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
 )
 
 type ProviderSvc interface {
@@ -36,7 +36,7 @@ func (p *providerSvc) ListProvider(ctx context.Context, req *api.ListProviderReq
 
 // CreateProvider 创建dns提供商
 func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProviderRequest) (*api.CreateProviderResponse, error) {
-	manager, err := NewDnsProvider(ctx, req.Platform, req.Secret)
+	manager, err := NewProvider(ctx, req.Platform, req.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -45,14 +45,14 @@ func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProvide
 		return nil, i18n.NewError(ctx, code.DNSProviderSecretError)
 	}
 	// 判断重复添加
-	if _, err := dns_provider_repo.DnsProvider().FindByProviderUserId(ctx, user.ID); err == nil {
+	if _, err := provider_repo.DnsProvider().FindByProviderUserId(ctx, user.ID); err == nil {
 		return nil, i18n.NewError(ctx, code.DNSProviderExist)
 	}
 	secretData, err := json.Marshal(req.Secret)
 	if err != nil {
 		return nil, err
 	}
-	dnsProvider := &dns_provider_entity.DnsProvider{
+	dnsProvider := &provider_entity.Provider{
 		Name:       req.Name,
 		UserID:     user.ID,
 		Secret:     string(secretData),
@@ -61,7 +61,7 @@ func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProvide
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
 	}
-	if err := dns_provider_repo.DnsProvider().Create(ctx, dnsProvider); err != nil {
+	if err := provider_repo.DnsProvider().Create(ctx, dnsProvider); err != nil {
 		return nil, err
 	}
 	return &api.CreateProviderResponse{}, nil

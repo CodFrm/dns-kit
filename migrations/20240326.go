@@ -2,10 +2,11 @@ package migrations
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/dns-kit/internal/api/user"
 	"github.com/codfrm/dns-kit/internal/model/entity/dns_entity"
-	"github.com/codfrm/dns-kit/internal/model/entity/dns_provider_entity"
+	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/user_entity"
 	"github.com/codfrm/dns-kit/internal/service/user_svc"
 	"github.com/go-gormigrate/gormigrate/v2"
@@ -22,7 +23,7 @@ func T20240326() *gormigrate.Migration {
 			entities := []any{
 				&user_entity.User{},
 				&dns_entity.Dns{},
-				&dns_provider_entity.DnsProvider{},
+				&provider_entity.Provider{},
 			}
 			for _, entity := range entities {
 				if err := tx.Migrator().AutoMigrate(entity); err != nil {

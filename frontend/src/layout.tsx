@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { Layout, Menu, Breadcrumb, Spin } from '@arco-design/web-react';
+import { Layout, Menu, Breadcrumb, Spin, Icon } from '@arco-design/web-react';
 import cs from 'classnames';
 import {
   IconDashboard,
   IconTag,
   IconMenuFold,
   IconMenuUnfold,
+  IconCloud,
 } from '@arco-design/web-react/icon';
 import qs from 'query-string';
 import NProgress from 'nprogress';
@@ -33,6 +34,8 @@ function getIconFromKey(key) {
       return <IconDashboard className={styles.icon} />;
     case 'example':
       return <IconTag className={styles.icon} />;
+    case 'provider':
+      return <IconCloud className={styles.icon} />;
     default:
       return <div className={styles['icon-empty']} />;
   }
@@ -79,6 +82,11 @@ function PageLayout() {
   const menuMap = useRef<
     Map<string, { menuItem?: boolean; subMenu?: boolean }>
   >(new Map());
+
+  const currentRouteKey = pathname.substring(
+    1,
+    pathname.indexOf('/', 1) == -1 ? pathname.length : null,
+  );
 
   const navbarHeight = 60;
   const menuWidth = collapsed ? 48 : settings.menuWidth;
@@ -226,6 +234,9 @@ function PageLayout() {
               {!!breadcrumb.length && (
                 <div className={styles['layout-breadcrumb']}>
                   <Breadcrumb>
+                    <Breadcrumb.Item key={'icon'}>
+                      {getIconFromKey(currentRouteKey)}
+                    </Breadcrumb.Item>
                     {breadcrumb.map((node, index) => (
                       <Breadcrumb.Item key={index}>
                         {typeof node === 'string' ? locale[node] || node : node}

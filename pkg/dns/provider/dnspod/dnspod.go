@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/dns-kit/pkg/dns"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	errors2 "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
-	"strconv"
 )
 
 type DnsPod struct {
@@ -30,7 +31,7 @@ func (t *DnsPod) GetDomainList(ctx context.Context) ([]*dns.Domain, error) {
 		logger.Default().Error("请求DnsPod失败")
 		return nil, err
 	}
-	var result []*dns.Domain
+	result := make([]*dns.Domain, 0)
 	for _, item := range response.Response.DomainList {
 		result = append(result, &dns.Domain{
 			ID:     strconv.FormatUint(*item.DomainId, 10),

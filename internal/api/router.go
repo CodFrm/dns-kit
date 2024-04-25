@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/codfrm/dns-kit/docs"
 	"github.com/codfrm/dns-kit/internal/controller/dns_ctr"
+	"github.com/codfrm/dns-kit/internal/controller/provider_ctr"
 	"github.com/codfrm/dns-kit/internal/controller/user_ctr"
 	"github.com/codfrm/dns-kit/internal/service/user_svc"
 )
@@ -37,7 +39,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 			dnsCtr.List,
 		)
 	}
-	dnsProviderCtr := dns_ctr.NewProvider()
+	dnsProviderCtr := provider_ctr.NewProvider()
 	{
 		r.Group("/", user_svc.User().Middleware(true)).Bind(
 			dnsProviderCtr.ListProvider,

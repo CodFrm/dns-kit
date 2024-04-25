@@ -3,11 +3,12 @@ package dnspod
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	"github.com/codfrm/dns-kit/pkg/dns"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
-	"strconv"
 )
 
 type Manager struct {

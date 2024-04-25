@@ -6,7 +6,12 @@ import PageLayout, { getFlattenRoutes } from './layout';
 import { useSelector } from 'react-redux';
 import React from 'react';
 import Exception403 from './pages/exception/403';
-import { GlobalState, updateUserInfo, userLoading, userLogout } from './store/global';
+import {
+  GlobalState,
+  updateUserInfo,
+  userLoading,
+  userLogout,
+} from './store/global';
 import { checkLogin } from './utils/user';
 import { useLazyCurrentUserQuery } from './services/user.service';
 import { useAppDispatch } from './store/hooks';
@@ -66,7 +71,7 @@ export const routes: IRoute[] = [
   },
   {
     name: '厂商管理',
-    key: 'example',
+    key: 'provider',
   },
   {
     name: '系统设置',

@@ -2,6 +2,7 @@ package cloudflare
 
 import (
 	"context"
+
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/codfrm/dns-kit/pkg/dns"
 )

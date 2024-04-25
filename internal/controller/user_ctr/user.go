@@ -2,6 +2,7 @@ package user_ctr
 
 import (
 	"context"
+
 	api "github.com/codfrm/dns-kit/internal/api/user"
 	"github.com/codfrm/dns-kit/internal/service/user_svc"
 	"github.com/gin-gonic/gin"

@@ -2,6 +2,8 @@ package user_svc
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/cago/pkg/iam/authn"
@@ -15,7 +17,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
-	"strconv"
 )
 
 type UserSvc interface {

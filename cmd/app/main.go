@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"log"
+
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/db"
@@ -12,11 +14,10 @@ import (
 	"github.com/codfrm/cago/pkg/iam/audit/audit_db"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/codfrm/dns-kit/internal/api"
-	"github.com/codfrm/dns-kit/internal/repository/dns_provider_repo"
 	"github.com/codfrm/dns-kit/internal/repository/dns_repo"
+	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
 	"github.com/codfrm/dns-kit/internal/repository/user_repo"
 	"github.com/codfrm/dns-kit/migrations"
-	"log"
 )
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
 	// 注册储存实例
 	user_repo.RegisterUser(user_repo.NewUser())
 	dns_repo.RegisterDns(dns_repo.NewDns())
-	dns_provider_repo.RegisterDnsProvider(dns_provider_repo.NewDnsProvider())
+	provider_repo.RegisterDnsProvider(provider_repo.NewDnsProvider())
 
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).
