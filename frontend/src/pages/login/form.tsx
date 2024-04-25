@@ -14,7 +14,7 @@ import useStorage from '@/utils/useStorage';
 import useLocale from '@/utils/useLocale';
 import locale from './locale';
 import styles from './style/index.module.less';
-import { LoginResponse, useLoginMutation } from '@/api/user';
+import { LoginResponse, useLoginMutation } from '@/services/user.service';
 
 export default function LoginForm() {
   const formRef = useRef<FormInstance>();

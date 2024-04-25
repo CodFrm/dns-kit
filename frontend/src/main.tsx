@@ -10,7 +10,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { GlobalContext } from './context';
 import changeTheme from './utils/changeTheme';
 import useStorage from './utils/useStorage';
-import './mock';
 import { Routes } from './routes';
 import store from './store/store';
 

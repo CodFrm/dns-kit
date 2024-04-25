@@ -1,5 +1,6 @@
 import { Message } from '@arco-design/web-react';
 import { PayloadAction, isRejectedWithValue } from '@reduxjs/toolkit';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Action, Dispatch, Middleware, MiddlewareAPI } from 'redux';
 
 export interface ApiResponse<T = any> {
@@ -18,7 +19,6 @@ export const rtkQueryErrorHandler: Middleware =
   (next: Dispatch<Action>) =>
   (action: PayloadAction<{ status: number; data: any; error: string }>) => {
     if (isRejectedWithValue(action)) {
-      console.log('pl', action.payload);
       if (typeof action.payload.status == 'string') {
         Message.error('请求失败: ' + action.payload.error);
       } else if (action.payload.status >= 400) {
@@ -31,3 +31,13 @@ export const rtkQueryErrorHandler: Middleware =
     }
     return next(action);
   };
+
+export const apiSlice = createApi({
+  baseQuery: fetchBaseQuery({
+    baseUrl: '/api/v1',
+  }),
+  reducerPath: 'api',
+  // Tag types are used for caching and invalidation.
+  tagTypes: ['User'],
+  endpoints: (build) => ({}),
+});

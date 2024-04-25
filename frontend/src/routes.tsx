@@ -6,9 +6,10 @@ import PageLayout, { getFlattenRoutes } from './layout';
 import { useSelector } from 'react-redux';
 import React from 'react';
 import Exception403 from './pages/exception/403';
-import { GlobalState, updateUserInfo, userLoading } from './store/global';
-import { checkLogin, userLogout } from './utils/user';
-import { useLazyCurrentUserQuery } from './api/user';
+import { GlobalState, updateUserInfo, userLoading, userLogout } from './store/global';
+import { checkLogin } from './utils/user';
+import { useLazyCurrentUserQuery } from './services/user.service';
+import { useAppDispatch } from './store/hooks';
 
 export type IRoute = AuthParams & {
   name: string;
@@ -147,22 +148,21 @@ const useRoute = (userPermission): [IRoute[], string] => {
 
 export const Routes = () => {
   const [currentUser, { data }] = useLazyCurrentUserQuery();
-
   const { settings, userInfo } = useSelector((state: GlobalState) => state);
   const [routes, defaultRoute] = useRoute(userInfo?.permissions);
-
   const flattenRoutes = useMemo(() => getFlattenRoutes(routes) || [], [routes]);
+  const dispatch = useAppDispatch();
 
   function fetchUserInfo() {
-    userLoading();
+    dispatch(userLoading());
     currentUser()
       .unwrap()
       .then((res) => {
-        updateUserInfo(res.data);
+        dispatch(updateUserInfo(res.data));
       })
       .catch((e) => {
         if (e.status == 401) {
-          userLogout();
+          dispatch(userLogout());
         }
       });
   }

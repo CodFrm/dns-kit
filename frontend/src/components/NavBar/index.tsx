@@ -1,7 +1,6 @@
 import { useContext } from 'react';
 import {
   Tooltip,
-  Input,
   Avatar,
   Select,
   Dropdown,
@@ -12,58 +11,41 @@ import {
 } from '@arco-design/web-react';
 import {
   IconLanguage,
-  IconNotification,
   IconSunFill,
   IconMoonFill,
-  IconUser,
   IconSettings,
   IconPoweroff,
   IconExperiment,
   IconDashboard,
-  IconTag,
 } from '@arco-design/web-react/icon';
 import { useSelector } from 'react-redux';
 import { GlobalContext } from '@/context';
 import useLocale from '@/utils/useLocale';
 import Logo from '@/assets/logo.svg';
-import MessageBox from '@/components/MessageBox';
 import IconButton from './IconButton';
-import Settings from '../Settings';
 import styles from './style/index.module.less';
 import defaultLocale from '@/locale';
-import { selectUserInfo } from '@/store/global';
-import { userLogout } from '@/utils/user';
-import { useLogoutMutation } from '@/api/user';
+import { selectUserInfo, userLogout } from '@/store/global';
+import { useLogoutMutation } from '@/services/user.service';
+import { useAppDispatch } from '@/store/hooks';
 
-function Navbar({ show }: { show: boolean }) {
+function Navbar() {
   const t = useLocale();
   const userInfo = useSelector(selectUserInfo);
   const [reqUserLogout, { isLoading }] = useLogoutMutation();
-
   const { setLang, lang, theme, setTheme } = useContext(GlobalContext);
+  const dispatch = useAppDispatch();
 
   function onMenuItemClick(key) {
     if (key === 'logout') {
       reqUserLogout()
         .unwrap()
         .then(() => {
-          userLogout();
+          dispatch(userLogout());
         });
     } else {
       Message.info(`You clicked ${key}`);
     }
-  }
-
-  if (!show) {
-    return (
-      <div className={styles['fixed-settings']}>
-        <Settings
-          trigger={
-            <Button icon={<IconSettings />} type="primary" size="large" />
-          }
-        />
-      </div>
-    );
   }
 
   const droplist = (
@@ -105,12 +87,6 @@ function Navbar({ show }: { show: boolean }) {
       </div>
       <ul className={styles.right}>
         <li>
-          <Input.Search
-            className={styles.round}
-            placeholder={t['navbar.search.placeholder']}
-          />
-        </li>
-        <li>
           <Select
             triggerElement={<IconButton icon={<IconLanguage />} />}
             options={[
@@ -132,11 +108,6 @@ function Navbar({ show }: { show: boolean }) {
           />
         </li>
         <li>
-          <MessageBox>
-            <IconButton icon={<IconNotification />} />
-          </MessageBox>
-        </li>
-        <li>
           <Tooltip
             content={
               theme === 'light'
@@ -150,7 +121,6 @@ function Navbar({ show }: { show: boolean }) {
             />
           </Tooltip>
         </li>
-        <Settings />
         {userInfo && (
           <li>
             <Dropdown droplist={droplist} position="br">

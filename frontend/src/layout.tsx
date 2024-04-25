@@ -186,7 +186,7 @@ function PageLayout() {
           [styles['layout-navbar-hidden']]: !showNavbar,
         })}
       >
-        <Navbar show={showNavbar} />
+        <Navbar />
       </div>
       {userLoading ? (
         <Spin className={styles['spin']} />

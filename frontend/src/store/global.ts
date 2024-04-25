@@ -1,8 +1,7 @@
 import { PayloadAction } from '@reduxjs/toolkit';
 import defaultSettings from '../settings.json';
 import { createAppSlice } from './hooks';
-import { CurrentUserResponse } from '@/api/user';
-import { userLogout } from '@/utils/user';
+import { CurrentUserResponse } from '@/services/user.service';
 
 export interface UserInfo {
   username?: string;
@@ -44,11 +43,17 @@ export const globalSlice = createAppSlice({
             'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
           permissions: {},
         };
+        console.log('state', state.userInfo);
         state.userLoading = false;
       },
     ),
-    setUserLogout: create.reducer((state, action) => {
+    userLogout: create.reducer((state, action) => {
       state.userInfo = undefined;
+      localStorage.removeItem('userStatus');
+      localStorage.removeItem('refreshToken');
+      if (window.location.pathname.replace(/\//g, '') !== 'login') {
+        window.location.pathname = '/login';
+      }
     }),
     userLoading: create.reducer((state) => {
       state.userLoading = true;
@@ -61,7 +66,7 @@ export const globalSlice = createAppSlice({
   },
 });
 
-export const { userLoading, updateUserInfo, setUserLogout } = globalSlice.actions;
+export const { userLoading, updateUserInfo, userLogout } = globalSlice.actions;
 
 export const { selectGlobal, selectSetting, selectUserInfo } =
   globalSlice.selectors;
