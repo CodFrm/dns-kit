@@ -18,6 +18,7 @@ import IconCalendar from './assets/calendar.svg';
 import IconComments from './assets/comments.svg';
 import IconContent from './assets/content.svg';
 import IconIncrease from './assets/increase.svg';
+import { selectUserInfo } from '@/store/global';
 
 const { Row, Col } = Grid;
 
@@ -61,7 +62,7 @@ function Overview() {
   const [loading, setLoading] = useState(true);
   const t = useLocale(locale);
 
-  const userInfo = useSelector((state: any) => state.userInfo || {});
+  const userInfo = useSelector(selectUserInfo);
 
   const fetchData = () => {
     setLoading(true);
@@ -83,7 +84,7 @@ function Overview() {
     <Card>
       <Typography.Title heading={5}>
         {t['workplace.welcomeBack']}
-        {userInfo.name}
+        {userInfo.username}
       </Typography.Title>
       <Divider />
       <Row>

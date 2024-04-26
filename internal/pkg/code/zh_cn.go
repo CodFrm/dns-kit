@@ -12,7 +12,8 @@ var zhCN = map[int]string{
 	UserNotLogin:          "用户未登录",
 	UsernameAlreadyExists: "用户名已存在",
 
-	DNSProviderNotSupport:  "DNS提供商不支持",
-	DNSProviderSecretError: "DNS提供商密钥错误",
-	DNSProviderExist:       "DNS提供商已存在",
+	ProviderNotSupport:  "供应商不支持",
+	ProviderSecretError: "供应商密钥错误",
+	ProviderExist:       "供应商已存在",
+	ProviderNotFound:    "供应商不存在",
 }

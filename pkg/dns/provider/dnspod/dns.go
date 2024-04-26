@@ -137,11 +137,15 @@ func (m Manager) DelRecord(ctx context.Context, record *dns.Record) error {
 func (m Manager) ExtraFields() []dns.Extra {
 	//额外字段:线路
 	return []dns.Extra{{
-		Key:       "RecordLine",
+		Key:       "record_line",
 		Title:     "线路",
 		FieldType: dns.FieldTypeSelect,
-		Options:   []string{"默认", "电信", "联通", "移动", "铁通", "广电", "教育网", "境内", "境外", "百度", "谷歌", "有道", "必应", "搜狗", "奇虎", "搜索引擎"},
-		Default:   "默认",
+		Options: []string{
+			"默认",
+			"电信", "联通", "移动", "铁通", "广电", "教育网", "境内", "境外",
+			"百度", "谷歌", "有道", "必应", "搜狗", "奇虎", "搜索引擎",
+		},
+		Default: "默认",
 	}}
 }
 

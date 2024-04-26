@@ -15,10 +15,10 @@ func NewProvider(ctx context.Context, platform provider_entity.Platform, secret 
 	switch platform {
 	case provider_entity.PlatformCloudflare:
 		manager, err = cloudflare.NewCloudflare(secret["key"], secret["email"])
-	case provider_entity.PlatformDnsPod:
+	case provider_entity.PlatformTencent:
 		manager, err = dnspod.NewDnsPod(secret["secret_id"], secret["secret_key"])
 	default:
-		return nil, i18n.NewError(ctx, code.DNSProviderNotSupport)
+		return nil, i18n.NewError(ctx, code.ProviderNotSupport)
 	}
 	if err != nil {
 		return nil, err

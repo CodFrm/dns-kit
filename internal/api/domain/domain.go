@@ -1,4 +1,4 @@
-package dns
+package domain
 
 import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -11,9 +11,9 @@ type Item struct {
 	Platform string `json:"platform"`
 }
 
-// ListRequest 获取dns列表
+// ListRequest 获取域名列表
 type ListRequest struct {
-	mux.Meta              `path:"/dns" method:"GET"`
+	mux.Meta              `path:"/domain" method:"GET"`
 	httputils.PageRequest `form:",inline"`
 }
 

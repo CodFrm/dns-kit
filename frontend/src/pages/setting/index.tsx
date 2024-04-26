@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Card } from '@arco-design/web-react';
 
-function Example() {
+function Setting() {
   return (
     <Card style={{ height: '80vh' }}>
       <Typography.Title heading={6}>
@@ -12,4 +12,4 @@ function Example() {
   );
 }
 
-export default Example;
+export default Setting;

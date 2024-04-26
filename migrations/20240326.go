@@ -5,7 +5,7 @@ import (
 
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/dns-kit/internal/api/user"
-	"github.com/codfrm/dns-kit/internal/model/entity/dns_entity"
+	"github.com/codfrm/dns-kit/internal/model/entity/domain_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/user_entity"
 	"github.com/codfrm/dns-kit/internal/service/user_svc"
@@ -22,7 +22,7 @@ func T20240326() *gormigrate.Migration {
 			ctx = db.WithContextDB(ctx, tx)
 			entities := []any{
 				&user_entity.User{},
-				&dns_entity.Dns{},
+				&domain_entity.Domain{},
 				&provider_entity.Provider{},
 			}
 			for _, entity := range entities {

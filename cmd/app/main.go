@@ -14,7 +14,7 @@ import (
 	"github.com/codfrm/cago/pkg/iam/audit/audit_db"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/codfrm/dns-kit/internal/api"
-	"github.com/codfrm/dns-kit/internal/repository/dns_repo"
+	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
 	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
 	"github.com/codfrm/dns-kit/internal/repository/user_repo"
 	"github.com/codfrm/dns-kit/migrations"
@@ -29,8 +29,8 @@ func main() {
 
 	// 注册储存实例
 	user_repo.RegisterUser(user_repo.NewUser())
-	dns_repo.RegisterDns(dns_repo.NewDns())
-	provider_repo.RegisterDnsProvider(provider_repo.NewDnsProvider())
+	domain_repo.RegisterDomain(domain_repo.NewDomain())
+	provider_repo.RegisterProvider(provider_repo.NewProvider())
 
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).

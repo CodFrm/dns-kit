@@ -10,7 +10,8 @@ const (
 
 // dns
 const (
-	DNSProviderNotSupport = iota + 20000
-	DNSProviderSecretError
-	DNSProviderExist
+	ProviderNotSupport = iota + 20000
+	ProviderSecretError
+	ProviderExist
+	ProviderNotFound
 )

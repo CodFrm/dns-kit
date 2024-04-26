@@ -5,7 +5,7 @@ import (
 
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/codfrm/dns-kit/docs"
-	"github.com/codfrm/dns-kit/internal/controller/dns_ctr"
+	"github.com/codfrm/dns-kit/internal/controller/domain_ctr"
 	"github.com/codfrm/dns-kit/internal/controller/provider_ctr"
 	"github.com/codfrm/dns-kit/internal/controller/user_ctr"
 	"github.com/codfrm/dns-kit/internal/service/user_svc"
@@ -33,20 +33,24 @@ func Router(ctx context.Context, root *mux.Router) error {
 		)
 	}
 
-	dnsCtr := dns_ctr.NewDns()
+	domainCtr := domain_ctr.NewDomain()
 	{
 		r.Group("/", user_svc.User().Middleware(true)).Bind(
-			dnsCtr.List,
+			domainCtr.List,
 		)
 	}
-	dnsProviderCtr := provider_ctr.NewProvider()
+
+	providerCtr := provider_ctr.NewProvider()
 	{
 		r.Group("/", user_svc.User().Middleware(true)).Bind(
-			dnsProviderCtr.ListProvider,
+			providerCtr.ListProvider,
 		)
 
-		r.Group("/", user_svc.User().Middleware(true), user_svc.User().AuditMiddleware("dns_provider")).Bind(
-			dnsProviderCtr.CreateProvider,
+		r.Group("/", user_svc.User().Middleware(true),
+			user_svc.User().AuditMiddleware("provider")).Bind(
+			providerCtr.CreateProvider,
+			providerCtr.UpdateProvider,
+			providerCtr.DeleteProvider,
 		)
 	}
 

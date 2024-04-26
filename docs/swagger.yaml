@@ -10,22 +10,6 @@ definitions:
         description: 错误信息
         type: string
     type: object
-  dns.CreateProviderRequest:
-    properties:
-      name:
-        type: string
-      platform:
-        $ref: '#/definitions/dns_provider_entity.DnsPlatform'
-      secret:
-        additionalProperties:
-          type: string
-        type: object
-    type: object
-  dns.CreateProviderResponse:
-    properties:
-      id:
-        type: integer
-    type: object
   dns.Item:
     properties:
       id:
@@ -34,16 +18,6 @@ definitions:
         type: string
       platform:
         type: string
-    type: object
-  dns.ListProviderResponse:
-    properties:
-      list:
-        items:
-          $ref: '#/definitions/dns.ProviderItem'
-          type: object
-        type: array
-      total:
-        type: integer
     type: object
   dns.ListResponse:
     properties:
@@ -55,22 +29,6 @@ definitions:
       total:
         type: integer
     type: object
-  dns.ProviderItem:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
-  dns_provider_entity.DnsPlatform:
-    description: |-
-      DnsPlatform enum type:
-      - DnsPlatformCloudflare: cloudflare
-      - DnsPlatformDnsPod: dnspod
-    enum:
-    - cloudflare
-    - dnspod
-    type: string
   httputils.PageRequest:
     properties:
       order:
@@ -95,6 +53,65 @@ definitions:
       total:
         type: integer
     type: object
+  provider.CreateProviderRequest:
+    properties:
+      name:
+        type: string
+      platform:
+        $ref: '#/definitions/provider_entity.Platform'
+      secret:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  provider.CreateProviderResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  provider.DeleteProviderRequest:
+    type: object
+  provider.DeleteProviderResponse:
+    type: object
+  provider.Item:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      platform:
+        $ref: '#/definitions/provider_entity.Platform'
+    type: object
+  provider.ListProviderResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/provider.Item'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  provider.UpdateProviderRequest:
+    properties:
+      name:
+        type: string
+      secret:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  provider.UpdateProviderResponse:
+    type: object
+  provider_entity.Platform:
+    description: |-
+      Platform enum type:
+      - PlatformCloudflare: cloudflare
+      - PlatformTencent: tencent
+    enum:
+    - cloudflare
+    - tencent
+    type: string
   user.CurrentUserResponse:
     properties:
       username:
@@ -113,6 +130,8 @@ definitions:
     properties:
       username:
         type: string
+    type: object
+  user.LogoutRequest:
     type: object
   user.LogoutResponse:
     type: object
@@ -166,11 +185,11 @@ paths:
       summary: 获取dns列表
       tags:
       - dns
-  /dns/provider:
+  /provider:
     get:
       consumes:
       - application/json
-      description: 获取dns提供商列表
+      description: 获取供应商列表
       produces:
       - application/json
       responses:
@@ -181,25 +200,25 @@ paths:
               code:
                 type: integer
               data:
-                $ref: '#/definitions/dns.ListProviderResponse'
+                $ref: '#/definitions/provider.ListProviderResponse'
               msg:
                 type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
-      summary: 获取dns提供商列表
+      summary: 获取供应商列表
       tags:
-      - dns/provider
+      - provider
     post:
       consumes:
       - application/json
-      description: 创建dns提供商
+      description: 创建供应商
       parameters:
       - in: body
         name: body
         schema:
-          $ref: '#/definitions/dns.CreateProviderRequest'
+          $ref: '#/definitions/provider.CreateProviderRequest'
       produces:
       - application/json
       responses:
@@ -210,16 +229,83 @@ paths:
               code:
                 type: integer
               data:
-                $ref: '#/definitions/dns.CreateProviderResponse'
+                $ref: '#/definitions/provider.CreateProviderResponse'
               msg:
                 type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
-      summary: 创建dns提供商
+      summary: 创建供应商
       tags:
-      - dns/provider
+      - provider
+  /provider/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除供应商
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/provider.DeleteProviderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/provider.DeleteProviderResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除供应商
+      tags:
+      - provider
+    put:
+      consumes:
+      - application/json
+      description: 更新供应商
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/provider.UpdateProviderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/provider.UpdateProviderResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新供应商
+      tags:
+      - provider
   /user/current:
     get:
       consumes:
@@ -276,10 +362,15 @@ paths:
       tags:
       - user
   /user/logout:
-    get:
+    delete:
       consumes:
       - application/json
       description: 登出
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.LogoutRequest'
       produces:
       - application/json
       responses:

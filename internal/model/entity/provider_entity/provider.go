@@ -1,10 +1,16 @@
 package provider_entity
 
+import (
+	"context"
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/codfrm/dns-kit/internal/pkg/code"
+)
+
 type Platform string
 
 const (
 	PlatformCloudflare Platform = "cloudflare"
-	PlatformDnsPod     Platform = "dnspod"
+	PlatformTencent    Platform = "tencent"
 )
 
 type Provider struct {
@@ -16,4 +22,11 @@ type Provider struct {
 	Status     int32    `gorm:"column:status;type:tinyint(4);default:0;not null"`
 	Createtime int64    `gorm:"column:createtime;type:bigint(20)"`
 	Updatetime int64    `gorm:"column:updatetime;type:bigint(20)"`
+}
+
+func (p *Provider) Check(ctx context.Context) error {
+	if p == nil {
+		return i18n.NewNotFoundError(ctx, code.ProviderNotFound)
+	}
+	return nil
 }

@@ -75,7 +75,7 @@ export const routes: IRoute[] = [
   },
   {
     name: '系统设置',
-    key: 'example',
+    key: 'setting',
   },
 ];
 

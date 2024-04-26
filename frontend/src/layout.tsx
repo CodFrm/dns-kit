@@ -8,6 +8,7 @@ import {
   IconMenuFold,
   IconMenuUnfold,
   IconCloud,
+  IconSettings,
 } from '@arco-design/web-react/icon';
 import qs from 'query-string';
 import NProgress from 'nprogress';
@@ -44,6 +45,8 @@ function getIconFromKey(key) {
       return <FaNetworkWired className={styles.icon} />;
     case 'certificate':
       return <RiLockLine className={styles.icon} />;
+    case 'setting':
+      return <IconSettings className={styles.icon} />;
     default:
       return <div className={styles['icon-empty']} />;
   }

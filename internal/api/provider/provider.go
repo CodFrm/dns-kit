@@ -7,11 +7,12 @@ import (
 )
 
 type Item struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID       int64                    `json:"id"`
+	Name     string                   `json:"name"`
+	Platform provider_entity.Platform `json:"platform"`
 }
 
-// ListProviderRequest 获取dns提供商列表
+// ListProviderRequest 获取供应商列表
 type ListProviderRequest struct {
 	mux.Meta              `path:"/provider" method:"GET"`
 	httputils.PageRequest `form:",inline"`
@@ -21,7 +22,7 @@ type ListProviderResponse struct {
 	httputils.PageResponse[*Item] `json:",inline"`
 }
 
-// CreateProviderRequest 创建dns提供商
+// CreateProviderRequest 创建供应商
 type CreateProviderRequest struct {
 	mux.Meta `path:"/provider" method:"POST"`
 	Name     string                   `json:"name" binding:"required,max=128" label:"名称"`
@@ -30,5 +31,24 @@ type CreateProviderRequest struct {
 }
 
 type CreateProviderResponse struct {
-	ID int64 `json:"id"`
+}
+
+// UpdateProviderRequest 更新供应商
+type UpdateProviderRequest struct {
+	mux.Meta `path:"/provider/:id" method:"PUT"`
+	ID       int64             `uri:"id" binding:"required" label:"ID"`
+	Name     string            `json:"name" binding:"required,max=128" label:"名称"`
+	Secret   map[string]string `json:"secret" binding:"required,max=256" label:"密钥信息"`
+}
+
+type UpdateProviderResponse struct {
+}
+
+// DeleteProviderRequest 删除供应商
+type DeleteProviderRequest struct {
+	mux.Meta `path:"/provider/:id" method:"DELETE"`
+	ID       int64 `uri:"id" binding:"required" label:"ID"`
+}
+
+type DeleteProviderResponse struct {
 }

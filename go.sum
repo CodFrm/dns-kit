@@ -33,8 +33,6 @@ github.com/chenzhuoyu/iasm v0.9.1 h1:tUHQJXo3NhBqw6s33wkGn9SP3bvrWLdlVIJ3hQBL7P0
 github.com/chenzhuoyu/iasm v0.9.1/go.mod h1:Xjy2NpN3h7aUqeqM+woSuuvxmIe6+DDsiNLIrkAmYog=
 github.com/cloudflare/cloudflare-go v0.92.0 h1:ltJvGvqZ4G6Fm2hHOYZ5RWpJQcrM0oDrsjjZydZhFJQ=
 github.com/cloudflare/cloudflare-go v0.92.0/go.mod h1:nUqvBUUDRxNzsDSQjbqUNWHEIYAoUlgRmcAzMKlFdKs=
-github.com/codfrm/cago v0.0.0-20240412135159-8b54c8a10cde h1:Qamy073fc54HnRvQB6SXwdLsmUIVlTDu7rzr77FAljM=
-github.com/codfrm/cago v0.0.0-20240412135159-8b54c8a10cde/go.mod h1:0FYGBNndi3X3EPUXFfA0CbKncBKqubgA1izQVPnGtuA=
 github.com/codfrm/cago v0.0.0-20240413013143-a8f0c62bb65f h1:+v/bAYw0hASFAdIj72wExBnTV4XG9ystct/6KnVaKyQ=
 github.com/codfrm/cago v0.0.0-20240413013143-a8f0c62bb65f/go.mod h1:0FYGBNndi3X3EPUXFfA0CbKncBKqubgA1izQVPnGtuA=
 github.com/coreos/go-semver v0.3.1 h1:yi21YpKnrx1gt5R+la8n5WgS0kCrsPp33dmEyHReZr4=

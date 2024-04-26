@@ -9,10 +9,12 @@ export interface ApiResponse<T = any> {
   data: T;
 }
 
-export type ListApiResponse<T = any> = ApiResponse<{
-  list: T[];
-  total: number;
-}>;
+export type ListApiResponse<T = any, Y = void> = ApiResponse<
+  Y & {
+    list: T[];
+    total: number;
+  }
+>;
 
 export const rtkQueryErrorHandler: Middleware =
   (api: MiddlewareAPI) =>
@@ -38,6 +40,6 @@ export const apiSlice = createApi({
   }),
   reducerPath: 'api',
   // Tag types are used for caching and invalidation.
-  tagTypes: ['User'],
+  tagTypes: ['User', 'Provider', 'CDN', 'Domain', 'Record'],
   endpoints: (build) => ({}),
 });

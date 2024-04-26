@@ -43,7 +43,6 @@ export const globalSlice = createAppSlice({
             'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
           permissions: {},
         };
-        console.log('state', state.userInfo);
         state.userLoading = false;
       },
     ),

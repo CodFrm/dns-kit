@@ -1,6 +1,6 @@
-package dns_entity
+package domain_entity
 
-type Dns struct {
+type Domain struct {
 	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
 	ProviderID int64  `gorm:"column:provider_id;type:bigint(20);not null"` // 供应商id
 	Name       string `gorm:"column:name;type:varchar(128);not null"`      // 名称
