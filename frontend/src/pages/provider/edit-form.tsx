@@ -1,4 +1,7 @@
-import { ProviderItem, useEditMutation } from '@/services/provider.service';
+import {
+  ProviderItem,
+  useProviderEditMutation,
+} from '@/services/provider.service';
 import {
   Form,
   FormInstance,
@@ -27,7 +30,7 @@ const EditForm: React.FC<{
   const [platform, setPlatform] = useState<string | undefined>(
     props.data?.platform,
   );
-  const [editProvider, { isLoading }] = useEditMutation();
+  const [editProvider, { isLoading }] = useProviderEditMutation();
   useEffect(() => {
     if (props.data) {
       form.setFieldsValue(props.data);

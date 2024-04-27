@@ -10,24 +10,61 @@ definitions:
         description: 错误信息
         type: string
     type: object
-  dns.Item:
+  domain.AddRequest:
     properties:
+      domain:
+        type: string
+      domain_id:
+        type: string
+      provider_id:
+        type: integer
+    type: object
+  domain.AddResponse:
+    type: object
+  domain.DeleteRequest:
+    type: object
+  domain.DeleteResponse:
+    type: object
+  domain.Item:
+    properties:
+      domain:
+        type: string
       id:
         type: integer
-      name:
-        type: string
-      platform:
+      provider_name:
         type: string
     type: object
-  dns.ListResponse:
+  domain.ListResponse:
     properties:
       list:
         items:
-          $ref: '#/definitions/dns.Item'
+          $ref: '#/definitions/domain.Item'
           type: object
         type: array
       total:
         type: integer
+    type: object
+  domain.QueryItem:
+    properties:
+      domain:
+        type: string
+      domain_id:
+        type: string
+      is_managed:
+        type: boolean
+      provider_id:
+        type: integer
+      provider_name:
+        type: string
+    type: object
+  domain.QueryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/domain.QueryItem'
+        type: array
+    type: object
+  domain.RecordListResponse:
     type: object
   httputils.PageRequest:
     properties:
@@ -65,9 +102,6 @@ definitions:
         type: object
     type: object
   provider.CreateProviderResponse:
-    properties:
-      id:
-        type: integer
     type: object
   provider.DeleteProviderRequest:
     type: object
@@ -160,11 +194,11 @@ info:
   title: api文档
   version: "1.0"
 paths:
-  /dns:
+  /domain:
     get:
       consumes:
       - application/json
-      description: 获取dns列表
+      description: 获取域名列表
       produces:
       - application/json
       responses:
@@ -175,16 +209,134 @@ paths:
               code:
                 type: integer
               data:
-                $ref: '#/definitions/dns.ListResponse'
+                $ref: '#/definitions/domain.ListResponse'
               msg:
                 type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
-      summary: 获取dns列表
+      summary: 获取域名列表
       tags:
-      - dns
+      - domain
+    post:
+      consumes:
+      - application/json
+      description: 纳管域名
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/domain.AddRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/domain.AddResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 纳管域名
+      tags:
+      - domain
+  /domain/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除域名
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/domain.DeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/domain.DeleteResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除域名
+      tags:
+      - domain
+  /domain/{id}/record:
+    get:
+      consumes:
+      - application/json
+      description: 获取记录列表
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/domain.RecordListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取记录列表
+      tags:
+      - domain/record
+  /domain/query:
+    get:
+      consumes:
+      - application/json
+      description: 查询域名列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/domain.QueryResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 查询域名列表
+      tags:
+      - domain
   /provider:
     get:
       consumes:

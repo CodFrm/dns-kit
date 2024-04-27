@@ -8,10 +8,16 @@ const (
 	UsernameAlreadyExists
 )
 
-// dns
+// provider
 const (
 	ProviderNotSupport = iota + 20000
 	ProviderSecretError
 	ProviderExist
 	ProviderNotFound
+)
+
+// domain
+const (
+	DomainNotFound = iota + 30000
+	DomainIsManaged
 )

@@ -10,11 +10,11 @@ export type ProviderPlatform = 'tencent' | 'cloudflare';
 
 export const providerApiSlice = apiSlice.injectEndpoints({
   endpoints: (build) => ({
-    list: build.query<ListApiResponse, void>({
+    providerList: build.query<ListApiResponse, void>({
       query: () => '/provider',
       providesTags: ['Provider'],
     }),
-    edit: build.mutation<
+    providerEdit: build.mutation<
       ApiResponse,
       {
         id?: number;
@@ -37,7 +37,7 @@ export const providerApiSlice = apiSlice.injectEndpoints({
         return ['Provider'];
       },
     }),
-    delete: build.mutation<ApiResponse, number>({
+    providerDelete: build.mutation<ApiResponse, number>({
       query(id) {
         return {
           url: '/provider/' + id,
@@ -49,5 +49,8 @@ export const providerApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useListQuery, useEditMutation, useDeleteMutation } =
-  providerApiSlice;
+export const {
+  useProviderListQuery,
+  useProviderEditMutation,
+  useProviderDeleteMutation,
+} = providerApiSlice;

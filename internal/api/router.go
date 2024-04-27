@@ -37,6 +37,13 @@ func Router(ctx context.Context, root *mux.Router) error {
 	{
 		r.Group("/", user_svc.User().Middleware(true)).Bind(
 			domainCtr.List,
+			domainCtr.Query,
+		)
+
+		r.Group("/", user_svc.User().Middleware(true),
+			user_svc.User().AuditMiddleware("domain")).Bind(
+			domainCtr.Add,
+			domainCtr.Delete,
 		)
 	}
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Button,
   Card,
@@ -14,10 +14,9 @@ import Title from '@arco-design/web-react/es/Typography/title';
 import EditForm from '@/pages/provider/edit-form';
 import {
   ProviderItem,
-  useDeleteMutation,
-  useListQuery,
+  useProviderDeleteMutation,
+  useProviderListQuery,
 } from '@/services/provider.service';
-import { Tooltip } from 'bizcharts';
 
 export function platformSupportTag(platform: string) {
   switch (platform) {
@@ -35,8 +34,8 @@ export function platformSupportTag(platform: string) {
 function Provider() {
   const [visible, setVisible] = useState(false);
   const [editData, setEditData] = useState<ProviderItem>();
-  const { data, isLoading } = useListQuery();
-  const [deleteProvider, {}] = useDeleteMutation();
+  const { data, isLoading } = useProviderListQuery();
+  const [deleteProvider, {}] = useProviderDeleteMutation();
   const columns: ColumnProps<ProviderItem>[] = [
     {
       key: 'id',

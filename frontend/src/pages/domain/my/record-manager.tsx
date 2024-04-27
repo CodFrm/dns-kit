@@ -1,11 +1,14 @@
-import { RecordExtraField, RecordItem } from '@/services/domain.service';
-import { ProviderItem, useEditMutation } from '@/services/provider.service';
+import {
+  DomainItem,
+  RecordExtraField,
+  RecordItem,
+} from '@/services/domain.service';
+import { useProviderEditMutation } from '@/services/provider.service';
 import {
   Button,
   Form,
   FormInstance,
   Input,
-  Message,
   Modal,
   Select,
   Space,
@@ -57,21 +60,16 @@ const RecordManager: React.FC<{
   visible: boolean;
   onOk: () => void;
   onCancel: () => void;
-  data?: ProviderItem;
+  data?: DomainItem;
 }> = (props) => {
   const [form] = Form.useForm();
-  const [platform, setPlatform] = useState<string | undefined>(
-    props.data?.platform,
-  );
-  const [editProvider, { isLoading }] = useEditMutation();
+  const [editProvider, { isLoading }] = useProviderEditMutation();
   const [add, setAdd] = useState(false);
   useEffect(() => {
     if (props.data) {
       form.setFieldsValue(props.data);
-      setPlatform(props.data.platform);
     } else {
       form.resetFields();
-      setPlatform(undefined);
     }
   }, [props.data]);
 

@@ -1,23 +1,27 @@
 import { useState } from 'react';
 import { Button, Card, Popconfirm, Space, Table } from '@arco-design/web-react';
 import { ColumnProps } from '@arco-design/web-react/es/Table';
-import {
-  IconDelete,
-  IconDesktop,
-  IconEdit,
-  IconList,
-  IconPlus,
-} from '@arco-design/web-react/icon';
+import { IconDelete, IconDesktop, IconPlus } from '@arco-design/web-react/icon';
 import Title from '@arco-design/web-react/es/Typography/title';
-import EditForm from '@/pages/provider/edit-form';
-import { ProviderItem } from '@/services/provider.service';
 import RecordManager from './record-manager';
+import AddDomain from './add-domain';
+import {
+  DomainItem,
+  useDomainDeleteMutation,
+  useDomainListQuery,
+} from '@/services/domain.service';
 
 function My() {
   const [visible, setVisible] = useState(false);
-  const [editData, setEditData] = useState<ProviderItem>();
+  const [addDomainVisible, setAddDomainVisible] = useState(false);
+  const [editData, setEditData] = useState<DomainItem>();
+  const { data, isLoading: listLoading } = useDomainListQuery();
+  const [deleteDomain, { isLoading: deleteLoading }] =
+    useDomainDeleteMutation();
 
-  const columns: ColumnProps<ProviderItem>[] = [
+  const isLoading = listLoading || deleteLoading;
+
+  const columns: ColumnProps<DomainItem>[] = [
     {
       key: 'id',
       title: 'ID',
@@ -28,7 +32,6 @@ function My() {
       title: '供应商',
       dataIndex: 'provider_name',
     },
-    { key: 'name', title: '名称', dataIndex: 'name' },
     { key: 'domain', title: '域名', dataIndex: 'domain' },
     {
       key: 'action',
@@ -50,7 +53,9 @@ function My() {
               focusLock
               title="确定"
               content="确认删除吗？删除后相关的资源也会被删除"
-              onOk={() => {}}
+              onOk={() => {
+                deleteDomain(item.id);
+              }}
             >
               <Button
                 type="text"
@@ -70,6 +75,15 @@ function My() {
       <Title heading={6}>我的域名</Title>
       <div className="flex flex-col">
         <div className="text-right">
+          <AddDomain
+            visible={addDomainVisible}
+            onOk={() => {
+              setAddDomainVisible(false);
+            }}
+            onCancel={() => {
+              setAddDomainVisible(false);
+            }}
+          />
           <RecordManager
             visible={visible}
             onOk={() => {
@@ -85,8 +99,7 @@ function My() {
             type="primary"
             icon={<IconPlus />}
             onClick={() => {
-              setEditData(null);
-              setVisible(true);
+              setAddDomainVisible(true);
             }}
           >
             纳管
@@ -94,12 +107,12 @@ function My() {
         </div>
         <Table
           columns={columns}
-          // loading={isLoading}
-          data={[{ id: 1, name: '1', platform: '1' }]}
+          loading={isLoading}
+          data={data?.data.list}
           border={{}}
           pagination={{
             pageSize: 20,
-            // total: data?.data?.total,
+            total: data?.data?.total,
           }}
         />
       </div>

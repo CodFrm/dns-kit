@@ -6,9 +6,9 @@
     },
     "basePath": "/api/v1",
     "paths": {
-        "/dns": {
+        "/domain": {
             "get": {
-                "description": "获取dns列表",
+                "description": "获取域名列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -16,9 +16,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "dns"
+                    "domain"
                 ],
-                "summary": "获取dns列表",
+                "summary": "获取域名列表",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -28,7 +28,193 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/dns.ListResponse"
+                                    "$ref": "#/definitions/domain.ListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "纳管域名",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "domain"
+                ],
+                "summary": "纳管域名",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/domain.AddRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/domain.AddResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/domain/query": {
+            "get": {
+                "description": "查询域名列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "domain"
+                ],
+                "summary": "查询域名列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/domain.QueryResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/domain/{id}": {
+            "delete": {
+                "description": "删除域名",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "domain"
+                ],
+                "summary": "删除域名",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/domain.DeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/domain.DeleteResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/domain/{id}/record": {
+            "get": {
+                "description": "获取记录列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "domain/record"
+                ],
+                "summary": "获取记录列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/domain.RecordListResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -483,34 +669,91 @@
                 }
             }
         },
-        "dns.Item": {
+        "domain.AddRequest": {
             "type": "object",
             "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "domain_id": {
+                    "type": "string"
+                },
+                "provider_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.AddResponse": {
+            "type": "object"
+        },
+        "domain.DeleteRequest": {
+            "type": "object"
+        },
+        "domain.DeleteResponse": {
+            "type": "object"
+        },
+        "domain.Item": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
-                "name": {
-                    "type": "string"
-                },
-                "platform": {
+                "provider_name": {
                     "type": "string"
                 }
             }
         },
-        "dns.ListResponse": {
+        "domain.ListResponse": {
             "type": "object",
             "properties": {
                 "list": {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "$ref": "#/definitions/dns.Item"
+                        "$ref": "#/definitions/domain.Item"
                     }
                 },
                 "total": {
                     "type": "integer"
                 }
             }
+        },
+        "domain.QueryItem": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "domain_id": {
+                    "type": "string"
+                },
+                "is_managed": {
+                    "type": "boolean"
+                },
+                "provider_id": {
+                    "type": "integer"
+                },
+                "provider_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.QueryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.QueryItem"
+                    }
+                }
+            }
+        },
+        "domain.RecordListResponse": {
+            "type": "object"
         },
         "httputils.PageRequest": {
             "type": "object",
@@ -565,12 +808,7 @@
             }
         },
         "provider.CreateProviderResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
+            "type": "object"
         },
         "provider.DeleteProviderRequest": {
             "type": "object"

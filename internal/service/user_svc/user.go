@@ -78,7 +78,7 @@ func (l *userSvc) Login(ctx *gin.Context, req *api.LoginRequest) error {
 		if err != nil {
 			return err
 		}
-		_ = audit.Ctx(ctx).Record(ctx, "login", zap.Int64("user_id", uid), zap.String("username", user.Username), zap.Error(err))
+		_ = audit.Ctx(ctx).Record("login", zap.Int64("user_id", uid), zap.String("username", user.Username), zap.Error(err))
 	}
 	return err
 }

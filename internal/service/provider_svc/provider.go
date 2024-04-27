@@ -8,6 +8,7 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"sync"
 	"time"
 
 	"github.com/codfrm/cago/pkg/consts"
@@ -30,6 +31,7 @@ type ProviderSvc interface {
 }
 
 type providerSvc struct {
+	sync.Mutex
 }
 
 var defaultProvider = &providerSvc{}
@@ -62,7 +64,22 @@ func (p *providerSvc) ListProvider(ctx context.Context, req *api.ListProviderReq
 
 // CreateProvider 创建供应商
 func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProviderRequest) (*api.CreateProviderResponse, error) {
-	manager, err := NewProvider(ctx, req.Platform, req.Secret)
+	p.Lock()
+	defer p.Unlock()
+	secretData, err := json.Marshal(req.Secret)
+	if err != nil {
+		return nil, err
+	}
+	provider2 := &provider_entity.Provider{
+		Name: req.Name,
+		//UserID:     user.ID,
+		Secret:     string(secretData),
+		Platform:   req.Platform,
+		Status:     consts.ACTIVE,
+		Createtime: time.Now().Unix(),
+		Updatetime: time.Now().Unix(),
+	}
+	manager, err := provider2.Factory(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -70,36 +87,27 @@ func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProvide
 	if err != nil {
 		return nil, i18n.NewError(ctx, code.ProviderSecretError)
 	}
+	provider2.UserID = user.ID
 	// 判断重复添加
-	provider, err := provider_repo.Provider().FindByProviderUserId(ctx, user.ID)
+	provider, err := provider_repo.Provider().FindByProviderUserId(ctx, provider2.UserID)
 	if err != nil {
 		return nil, err
 	}
 	if len(provider) > 0 {
 		return nil, i18n.NewError(ctx, code.ProviderExist)
 	}
-	secretData, err := json.Marshal(req.Secret)
-	if err != nil {
-		return nil, err
-	}
-	provider2 := &provider_entity.Provider{
-		Name:       req.Name,
-		UserID:     user.ID,
-		Secret:     string(secretData),
-		Platform:   req.Platform,
-		Status:     consts.ACTIVE,
-		Createtime: time.Now().Unix(),
-		Updatetime: time.Now().Unix(),
-	}
+
 	if err := provider_repo.Provider().Create(ctx, provider2); err != nil {
 		return nil, err
 	}
-	_ = audit.Ctx(ctx).Record(ctx, "create", zap.String("name", req.Name), zap.String("platform", string(req.Platform)))
+	_ = audit.Ctx(ctx).Record("create", zap.String("name", req.Name), zap.String("platform", string(req.Platform)))
 	return &api.CreateProviderResponse{}, nil
 }
 
 // UpdateProvider 更新供应商
 func (p *providerSvc) UpdateProvider(ctx context.Context, req *api.UpdateProviderRequest) (*api.UpdateProviderResponse, error) {
+	p.Lock()
+	defer p.Unlock()
 	provider, err := provider_repo.Provider().Find(ctx, req.ID)
 	if err != nil {
 		return nil, err
@@ -109,7 +117,7 @@ func (p *providerSvc) UpdateProvider(ctx context.Context, req *api.UpdateProvide
 	}
 	provider.Name = req.Name
 	if len(req.Secret) > 0 {
-		manager, err := NewProvider(ctx, provider.Platform, req.Secret)
+		manager, err := provider.Factory(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -138,12 +146,14 @@ func (p *providerSvc) UpdateProvider(ctx context.Context, req *api.UpdateProvide
 	if err := provider_repo.Provider().Update(ctx, provider); err != nil {
 		return nil, err
 	}
-	_ = audit.Ctx(ctx).Record(ctx, "update", zap.String("name", provider.Name))
+	_ = audit.Ctx(ctx).Record("update", zap.String("name", provider.Name))
 	return nil, nil
 }
 
 // DeleteProvider 删除供应商
 func (p *providerSvc) DeleteProvider(ctx context.Context, req *api.DeleteProviderRequest) (*api.DeleteProviderResponse, error) {
+	p.Lock()
+	defer p.Unlock()
 	provider, err := provider_repo.Provider().Find(ctx, req.ID)
 	if err != nil {
 		return nil, err
@@ -162,6 +172,6 @@ func (p *providerSvc) DeleteProvider(ctx context.Context, req *api.DeleteProvide
 	if err != nil {
 		return nil, err
 	}
-	_ = audit.Ctx(ctx).Record(ctx, "delete", zap.String("name", provider.Name))
+	_ = audit.Ctx(ctx).Record("delete", zap.String("name", provider.Name))
 	return nil, nil
 }

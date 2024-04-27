@@ -16,4 +16,7 @@ var zhCN = map[int]string{
 	ProviderSecretError: "供应商密钥错误",
 	ProviderExist:       "供应商已存在",
 	ProviderNotFound:    "供应商不存在",
+
+	DomainNotFound:  "域名不存在",
+	DomainIsManaged: "域名已纳管",
 }

@@ -15,6 +15,8 @@ type DomainRepo interface {
 	Create(ctx context.Context, domain *domain_entity.Domain) error
 	Update(ctx context.Context, domain *domain_entity.Domain) error
 	Delete(ctx context.Context, id int64) error
+
+	FindByDomainID(ctx context.Context, id string) (*domain_entity.Domain, error)
 }
 
 var defaultDomain DomainRepo
@@ -34,7 +36,7 @@ func NewDomain() DomainRepo {
 	return &domainRepo{}
 }
 
-func (u *domainRepo) Find(ctx context.Context, id int64) (*domain_entity.Domain, error) {
+func (d *domainRepo) Find(ctx context.Context, id int64) (*domain_entity.Domain, error) {
 	ret := &domain_entity.Domain{}
 	if err := db.Ctx(ctx).Where("id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
@@ -45,19 +47,19 @@ func (u *domainRepo) Find(ctx context.Context, id int64) (*domain_entity.Domain,
 	return ret, nil
 }
 
-func (u *domainRepo) Create(ctx context.Context, domain *domain_entity.Domain) error {
+func (d *domainRepo) Create(ctx context.Context, domain *domain_entity.Domain) error {
 	return db.Ctx(ctx).Create(domain).Error
 }
 
-func (u *domainRepo) Update(ctx context.Context, domain *domain_entity.Domain) error {
+func (d *domainRepo) Update(ctx context.Context, domain *domain_entity.Domain) error {
 	return db.Ctx(ctx).Updates(domain).Error
 }
 
-func (u *domainRepo) Delete(ctx context.Context, id int64) error {
+func (d *domainRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Model(&domain_entity.Domain{}).Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
-func (u *domainRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*domain_entity.Domain, int64, error) {
+func (d *domainRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*domain_entity.Domain, int64, error) {
 	var list []*domain_entity.Domain
 	var count int64
 	find := db.Ctx(ctx).Model(&domain_entity.Domain{}).Where("status=?", consts.ACTIVE)
@@ -68,4 +70,15 @@ func (u *domainRepo) FindPage(ctx context.Context, page httputils.PageRequest) (
 		return nil, 0, err
 	}
 	return list, count, nil
+}
+
+func (d *domainRepo) FindByDomainID(ctx context.Context, id string) (*domain_entity.Domain, error) {
+	ret := &domain_entity.Domain{}
+	if err := db.Ctx(ctx).Where("domain_id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
 }
