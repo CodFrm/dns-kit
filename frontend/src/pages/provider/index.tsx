@@ -27,6 +27,12 @@ export function platformSupportTag(platform: string) {
           <Tag color="arcoblue">DNS</Tag>
         </Space>
       );
+    case 'cloudflare':
+      return (
+        <Space>
+          <Tag color="arcoblue">DNS</Tag>
+        </Space>
+      );
   }
   return <></>;
 }
@@ -52,7 +58,7 @@ function Provider() {
       title: '平台',
       dataIndex: 'platform',
       render(col) {
-        return { tencent: '腾讯云' }[col];
+        return { tencent: '腾讯云', cloudflare: 'Cloudflare' }[col];
       },
     },
     {

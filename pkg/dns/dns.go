@@ -19,9 +19,9 @@ type Manager interface {
 	// AddRecord 添加记录
 	AddRecord(ctx context.Context, record *Record) error
 	// UpdateRecord 更新记录
-	UpdateRecord(ctx context.Context, record *Record) error
+	UpdateRecord(ctx context.Context, recordId string, record *Record) error
 	// DelRecord 删除记录
-	DelRecord(ctx context.Context, record *Record) error
+	DelRecord(ctx context.Context, recordId string) error
 	// ExtraFields 额外字段定义描述
-	ExtraFields() []Extra
+	ExtraFields() []*Extra
 }

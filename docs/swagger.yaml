@@ -10,6 +10,70 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  dns.Extra:
+    properties:
+      default:
+        type: any
+      field_type:
+        $ref: '#/definitions/dns.FieldType'
+      key:
+        type: string
+      options:
+        description: 选项，只有FieldTypeSelect时有效
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  dns.FieldType:
+    description: |-
+      FieldType enum type:
+      - FieldTypeText: text
+      - FieldTypeNumber: number
+      - FieldTypeSwitch: switch
+      - FieldTypeSelect: select
+    enum:
+    - text
+    - number
+    - switch
+    - select
+    type: string
+  dns.Record:
+    properties:
+      extra:
+        additionalProperties:
+          type: any
+        description: 额外字段，各个平台的特殊字段，例如dnspod支持线路、cloudflare支持代理
+        type: object
+      id:
+        type: string
+      name:
+        type: string
+      ttl:
+        type: integer
+      type:
+        $ref: '#/definitions/dns.RecordType'
+      value:
+        type: string
+    type: object
+  dns.RecordType:
+    description: |-
+      RecordType enum type:
+      - A: A
+      - AAAA: AAAA
+      - CNAME: CNAME
+      - TXT: TXT
+      - MX: MX
+      - NS: NS
+    enum:
+    - A
+    - AAAA
+    - CNAME
+    - TXT
+    - MX
+    - NS
+    type: string
   domain.AddRequest:
     properties:
       domain:
@@ -20,6 +84,27 @@ definitions:
         type: integer
     type: object
   domain.AddResponse:
+    type: object
+  domain.CreateRecordRequest:
+    properties:
+      extra:
+        additionalProperties:
+          type: any
+        type: object
+      name:
+        type: string
+      ttl:
+        type: integer
+      type:
+        $ref: '#/definitions/dns.RecordType'
+      value:
+        type: string
+    type: object
+  domain.CreateRecordResponse:
+    type: object
+  domain.DeleteRecordRequest:
+    type: object
+  domain.DeleteRecordResponse:
     type: object
   domain.DeleteRequest:
     type: object
@@ -65,6 +150,32 @@ definitions:
         type: array
     type: object
   domain.RecordListResponse:
+    properties:
+      extra:
+        items:
+          $ref: '#/definitions/dns.Extra'
+        type: array
+      list:
+        items:
+          $ref: '#/definitions/dns.Record'
+        type: array
+    type: object
+  domain.UpdateRecordRequest:
+    properties:
+      extra:
+        additionalProperties:
+          type: any
+        type: object
+      name:
+        type: string
+      ttl:
+        type: integer
+      type:
+        $ref: '#/definitions/dns.RecordType'
+      value:
+        type: string
+    type: object
+  domain.UpdateRecordResponse:
     type: object
   httputils.PageRequest:
     properties:
@@ -310,6 +421,114 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 获取记录列表
+      tags:
+      - domain/record
+    post:
+      consumes:
+      - application/json
+      description: 创建记录
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/domain.CreateRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/domain.CreateRecordResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建记录
+      tags:
+      - domain/record
+  /domain/{id}/record/{recordID}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除记录
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: recordID
+        required: true
+        type: string
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/domain.DeleteRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/domain.DeleteRecordResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除记录
+      tags:
+      - domain/record
+    put:
+      consumes:
+      - application/json
+      description: 更新记录
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: path
+        name: recordID
+        required: true
+        type: string
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/domain.UpdateRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/domain.UpdateRecordResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 更新记录
       tags:
       - domain/record
   /domain/query:

@@ -2,6 +2,7 @@ package cloudflare
 
 import (
 	"context"
+	"strings"
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/codfrm/dns-kit/pkg/dns"
@@ -55,7 +56,7 @@ func (d *Manager) GetRecordList(ctx context.Context) ([]*dns.Record, error) {
 func (d *Manager) toDNSRecord(record cloudflare.DNSRecord) *dns.Record {
 	ret := &dns.Record{
 		ID:    record.ID,
-		Name:  record.Name,
+		Name:  strings.TrimSuffix(record.Name, "."+record.ZoneName),
 		Type:  dns.RecordType(record.Type),
 		Value: record.Content,
 		TTL:   record.TTL,
@@ -76,9 +77,14 @@ func (d *Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 		Content: record.Value,
 		TTL:     record.TTL,
 	}
+	param.Proxied = new(bool)
 	if d.isProxied(record) {
-		param.Proxied = new(bool)
 		*param.Proxied = true
+	} else {
+		*param.Proxied = false
+	}
+	if record.TTL == 0 {
+		record.TTL = 1
 	}
 	_, err := d.api.CreateDNSRecord(ctx, d.rc, param)
 	if err != nil {
@@ -87,17 +93,19 @@ func (d *Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 	return nil
 }
 
-func (d *Manager) UpdateRecord(ctx context.Context, record *dns.Record) error {
+func (d *Manager) UpdateRecord(ctx context.Context, recordId string, record *dns.Record) error {
 	param := cloudflare.UpdateDNSRecordParams{
 		Type:    string(record.Type),
 		Name:    record.Name,
 		Content: record.Value,
-		ID:      record.ID,
+		ID:      recordId,
 		TTL:     record.TTL,
 	}
+	param.Proxied = new(bool)
 	if d.isProxied(record) {
-		param.Proxied = new(bool)
 		*param.Proxied = true
+	} else {
+		*param.Proxied = false
 	}
 	_, err := d.api.UpdateDNSRecord(ctx, d.rc, param)
 	if err != nil {
@@ -114,15 +122,15 @@ func (d *Manager) isProxied(record *dns.Record) bool {
 	return ret
 }
 
-func (d *Manager) DelRecord(ctx context.Context, record *dns.Record) error {
-	return d.api.DeleteDNSRecord(ctx, d.rc, record.ID)
+func (d *Manager) DelRecord(ctx context.Context, recordId string) error {
+	return d.api.DeleteDNSRecord(ctx, d.rc, recordId)
 }
 
-func (d *Manager) ExtraFields() []dns.Extra {
-	return []dns.Extra{{
+func (d *Manager) ExtraFields() []*dns.Extra {
+	return []*dns.Extra{{
 		Key:       "proxied",
 		Title:     "代理",
 		FieldType: dns.FieldTypeSwitch,
-		Default:   false,
+		Default:   true,
 	}}
 }

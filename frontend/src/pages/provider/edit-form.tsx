@@ -14,10 +14,12 @@ import FormItem from '@arco-design/web-react/es/Form/form-item';
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { platformSupportTag } from '.';
 import Tencent from './platform/tencent';
+import Cloudflare from './platform/cloudflare';
 
 const platformForm: { [key: string]: FunctionComponent<{ update: boolean }> } =
   {
     tencent: Tencent,
+    cloudflare: Cloudflare,
   };
 
 const EditForm: React.FC<{

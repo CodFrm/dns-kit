@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Popconfirm, Space, Table } from '@arco-design/web-react';
+import { Button, Card, Message, Popconfirm, Space, Table } from '@arco-design/web-react';
 import { ColumnProps } from '@arco-design/web-react/es/Table';
 import { IconDelete, IconDesktop, IconPlus } from '@arco-design/web-react/icon';
 import Title from '@arco-design/web-react/es/Typography/title';
@@ -54,7 +54,11 @@ function My() {
               title="确定"
               content="确认删除吗？删除后相关的资源也会被删除"
               onOk={() => {
-                deleteDomain(item.id);
+                deleteDomain(item.id)
+                  .unwrap()
+                  .then(() => {
+                    Message.success('删除成功');
+                  });
               }}
             >
               <Button
@@ -92,7 +96,7 @@ function My() {
             onCancel={() => {
               setVisible(false);
             }}
-            data={editData}
+            domain={editData}
           />
           <Button
             style={{ marginBottom: 10 }}

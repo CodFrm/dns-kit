@@ -20,4 +20,6 @@ const (
 const (
 	DomainNotFound = iota + 30000
 	DomainIsManaged
+	RecordCreateFailed
+	RecordUpdateFailed
 )

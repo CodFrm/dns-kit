@@ -3,7 +3,7 @@ import { ApiResponse, ListApiResponse, apiSlice } from './api';
 export interface DomainItem {
   id: number;
   provider_name: string;
-  name: string;
+  domain: string;
 }
 
 export interface RecordExtraField {
@@ -14,10 +14,12 @@ export interface RecordExtraField {
   default?: any;
 }
 
-export type RecordType = 'A' | 'AAAA' | 'CNAME' | 'TXT';
+export type RecordType = 'A' | 'AAAA' | 'CNAME' | 'TXT' | 'MX' | 'NS';
+
+export const RecordTypes = ['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'NS'];
 
 export interface RecordItem {
-  id: string;
+  id?: string;
   type: RecordType;
   name: string;
   value: string;
@@ -56,7 +58,7 @@ export const domainApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ['Domain'],
     }),
-    domainDelete: build.mutation<ApiResponse,  number >({
+    domainDelete: build.mutation<ApiResponse, number>({
       query(id) {
         return {
           url: `/domain/${id}`,
@@ -66,11 +68,64 @@ export const domainApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ['Domain', 'Record'],
     }),
     recordList: build.query<
-      ListApiResponse<RecordItem, { extra_fields: RecordExtraField[] }>,
-      void
+      ApiResponse<{ list: RecordItem[]; extra: RecordExtraField[] }>,
+      number
     >({
-      query: () => '/domain/record',
+      query: (id: number) => '/domain/' + id + '/record',
       providesTags: ['Record'],
+    }),
+    recordCreate: build.mutation<
+      ApiResponse,
+      { domain_id: number; record: RecordItem }
+    >({
+      query(params) {
+        return {
+          url: `/domain/${params.domain_id}/record`,
+          method: 'POST',
+          body: params.record,
+        };
+      },
+      invalidatesTags: (result, error, params) => {
+        if (error) {
+          return [];
+        }
+        return ['Record'];
+      },
+    }),
+    recordUpdate: build.mutation<
+      ApiResponse,
+      { domain_id: number; record_id: string; record: RecordItem }
+    >({
+      query(params) {
+        return {
+          url: `/domain/${params.domain_id}/record/${params.record_id}`,
+          method: 'PUT',
+          body: params.record,
+        };
+      },
+      invalidatesTags: (result, error, params) => {
+        if (error) {
+          return [];
+        }
+        return ['Record'];
+      },
+    }),
+    recordDelete: build.mutation<
+      ApiResponse,
+      { domain_id: number; record_id: string }
+    >({
+      query(params) {
+        return {
+          url: `/domain/${params.domain_id}/record/${params.record_id}`,
+          method: 'DELETE',
+        };
+      },
+      invalidatesTags: (result, error, params) => {
+        if (error) {
+          return [];
+        }
+        return ['Record'];
+      },
     }),
   }),
 });
@@ -81,4 +136,8 @@ export const {
   useDomainQueryQuery,
   useDomainAddMutation,
   useDomainDeleteMutation,
+  useLazyRecordListQuery,
+  useRecordDeleteMutation,
+  useRecordCreateMutation,
+  useRecordUpdateMutation,
 } = domainApiSlice;

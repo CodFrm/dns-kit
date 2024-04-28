@@ -46,6 +46,19 @@ func Router(ctx context.Context, root *mux.Router) error {
 			domainCtr.Delete,
 		)
 	}
+	domainRecordCtr := domain_ctr.NewRecord()
+	{
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
+			domainRecordCtr.RecordList,
+		)
+
+		r.Group("/", user_svc.User().Middleware(true),
+			user_svc.User().AuditMiddleware("domain_record")).Bind(
+			domainRecordCtr.CreateRecord,
+			domainRecordCtr.UpdateRecord,
+			domainRecordCtr.DeleteRecord,
+		)
+	}
 
 	providerCtr := provider_ctr.NewProvider()
 	{

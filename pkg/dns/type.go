@@ -13,13 +13,13 @@ const (
 )
 
 type Record struct {
-	ID    string
-	Type  RecordType
-	Name  string
-	Value string
-	TTL   int
+	ID    string     `json:"id"`
+	Type  RecordType `json:"type"`
+	Name  string     `json:"name"`
+	Value string     `json:"value"`
+	TTL   int        `json:"ttl"`
 	// 额外字段，各个平台的特殊字段，例如dnspod支持线路、cloudflare支持代理
-	Extra map[string]any
+	Extra map[string]any `json:"extra"`
 }
 
 type FieldType string
@@ -33,17 +33,17 @@ const (
 
 // Extra 额外字段定义描述
 type Extra struct {
-	Key       string
-	Title     string
-	FieldType FieldType
+	Key       string    `json:"key"`
+	Title     string    `json:"title"`
+	FieldType FieldType `json:"field_type"`
 	// 选项，只有FieldTypeSelect时有效
-	Options []string
-	Default any
+	Options []string `json:"options"`
+	Default any      `json:"default"`
 }
 
 type Domain struct {
-	ID     string
-	Domain string
+	ID     string `json:"id"`
+	Domain string `json:"domain"`
 }
 
 type User struct {

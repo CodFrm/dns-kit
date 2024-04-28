@@ -19,7 +19,7 @@ type Manager struct {
 func (m Manager) GetRecordList(ctx context.Context) ([]*dns.Record, error) {
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := dnspod.NewDescribeRecordListRequest()
-
+	request.SetContext(ctx)
 	request.Domain = common.StringPtr(*m.rc.Domain)
 
 	// 返回的resp是一个DescribeRecordListResponse的实例，与请求对象对应
@@ -39,7 +39,7 @@ func (m Manager) GetRecordList(ctx context.Context) ([]*dns.Record, error) {
 			Name:  *record.Name,
 			Value: *record.Value,
 			TTL:   int(*record.TTL),
-			Extra: map[string]any{"Line": *record.Line},
+			Extra: map[string]any{"line": *record.Line},
 		})
 	}
 	return records, nil
@@ -80,10 +80,10 @@ func (m Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 	return nil
 }
 
-func (m Manager) UpdateRecord(ctx context.Context, record *dns.Record) error {
+func (m Manager) UpdateRecord(ctx context.Context, recordId string, record *dns.Record) error {
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := dnspod.NewModifyRecordRequest()
-
+	request.SetContext(ctx)
 	request.Domain = common.StringPtr(*m.rc.Domain)
 	request.RecordType = common.StringPtr(string(record.Type))
 	//额外字段线路
@@ -92,7 +92,7 @@ func (m Manager) UpdateRecord(ctx context.Context, record *dns.Record) error {
 	request.RecordLine = common.StringPtr(RecordLine)
 	request.Value = common.StringPtr(record.Value)
 	//类型转换
-	parseUint, err := strconv.ParseUint(record.ID, 10, 64)
+	parseUint, err := strconv.ParseUint(recordId, 10, 64)
 	if err != nil {
 		return err
 	}
@@ -111,12 +111,12 @@ func (m Manager) UpdateRecord(ctx context.Context, record *dns.Record) error {
 	return nil
 }
 
-func (m Manager) DelRecord(ctx context.Context, record *dns.Record) error {
+func (m Manager) DelRecord(ctx context.Context, recordId string) error {
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := dnspod.NewDeleteRecordRequest()
 
 	request.Domain = common.StringPtr(*m.rc.Domain)
-	parseUint, err := strconv.ParseUint(record.ID, 10, 64)
+	parseUint, err := strconv.ParseUint(recordId, 10, 64)
 	if err != nil {
 		return err
 	}
@@ -134,10 +134,10 @@ func (m Manager) DelRecord(ctx context.Context, record *dns.Record) error {
 	return nil
 }
 
-func (m Manager) ExtraFields() []dns.Extra {
+func (m Manager) ExtraFields() []*dns.Extra {
 	//额外字段:线路
-	return []dns.Extra{{
-		Key:       "record_line",
+	return []*dns.Extra{{
+		Key:       "line",
 		Title:     "线路",
 		FieldType: dns.FieldTypeSelect,
 		Options: []string{

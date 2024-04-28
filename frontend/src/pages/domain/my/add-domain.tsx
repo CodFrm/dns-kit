@@ -5,18 +5,13 @@ import {
 import { ProviderItem } from '@/services/provider.service';
 import {
   Button,
-  Form,
-  Input,
   List,
   Message,
   Modal,
-  Select,
   Space,
   Tag,
   Typography,
 } from '@arco-design/web-react';
-import FormItem from '@arco-design/web-react/es/Form/form-item';
-import { useEffect, useState } from 'react';
 
 const AddDomain: React.FC<{
   visible: boolean;
@@ -60,7 +55,11 @@ const AddDomain: React.FC<{
                     provider_id: item.provider_id,
                     domain_id: item.domain_id,
                     domain: item.domain,
-                  });
+                  })
+                    .unwrap()
+                    .then(() => {
+                      Message.success('纳管成功');
+                    });
                 }}
                 size="mini"
               >

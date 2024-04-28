@@ -12,8 +12,8 @@ type Cloudflare struct {
 	api *cloudflare.API
 }
 
-func NewCloudflare(key string, email string) (dns.DomainManager, error) {
-	api, err := cloudflare.New(key, email)
+func NewCloudflare(token string) (dns.DomainManager, error) {
+	api, err := cloudflare.NewWithAPIToken(token)
 	if err != nil {
 		return nil, err
 	}

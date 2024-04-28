@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
+	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
+	"github.com/codfrm/dns-kit/pkg/dns"
 )
 
 type Domain struct {
@@ -21,4 +23,26 @@ func (d *Domain) Check(ctx context.Context) error {
 		return i18n.NewError(ctx, code.DomainNotFound)
 	}
 	return nil
+}
+
+func (d *Domain) Factory(ctx context.Context) (dns.Manager, error) {
+	provider, err := provider_repo.Provider().Find(ctx, d.ProviderID)
+	if err != nil {
+		return nil, err
+	}
+	if err := provider.Check(ctx); err != nil {
+		return nil, err
+	}
+	manager, err := provider.Factory(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dnsManager, err := manager.BuildDNSManager(ctx, &dns.Domain{
+		ID:     d.DomainID,
+		Domain: d.Domain,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return dnsManager, nil
 }

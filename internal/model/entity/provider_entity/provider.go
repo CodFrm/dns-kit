@@ -55,7 +55,7 @@ func (p *Provider) Factory(ctx context.Context) (dns.DomainManager, error) {
 	)
 	switch p.Platform {
 	case PlatformCloudflare:
-		manager, err = cloudflare.NewCloudflare(p.SecretMap()["key"], p.SecretMap()["email"])
+		manager, err = cloudflare.NewCloudflare(p.SecretMap()["token"])
 	case PlatformTencent:
 		manager, err = dnspod.NewDnsPod(p.SecretMap()["secret_id"], p.SecretMap()["secret_key"])
 	default:

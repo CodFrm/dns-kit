@@ -2,6 +2,13 @@ import {
   DomainItem,
   RecordExtraField,
   RecordItem,
+  RecordTypes,
+  useDomainDeleteMutation,
+  useLazyRecordListQuery,
+  useRecordCreateMutation,
+  useRecordDeleteMutation,
+  useRecordListQuery,
+  useRecordUpdateMutation,
 } from '@/services/domain.service';
 import { useProviderEditMutation } from '@/services/provider.service';
 import {
@@ -9,69 +16,69 @@ import {
   Form,
   FormInstance,
   Input,
+  Message,
   Modal,
+  Popconfirm,
   Select,
   Space,
+  Switch,
   Table,
 } from '@arco-design/web-react';
 import FormItem from '@arco-design/web-react/es/Form/form-item';
 import useForm from '@arco-design/web-react/es/Form/useForm';
 import { ColumnProps } from '@arco-design/web-react/es/Table';
-import { IconEdit, IconPlus } from '@arco-design/web-react/icon';
+import { IconDelete, IconEdit, IconPlus } from '@arco-design/web-react/icon';
 import React, { useContext } from 'react';
 import { useEffect, useState } from 'react';
 
-const tencent = [];
-
 const EditableContext = React.createContext<{
-  getForm?: () => FormInstance;
-  edit?: boolean;
-  setEdit?: (edit: boolean) => void;
+  getForm?: () => FormInstance<RecordItem>;
 }>({});
-
-const extraFields: RecordExtraField[] = [
-  {
-    key: 'record_line',
-    title: '线路',
-    field_type: 'select',
-    options: [
-      '默认',
-      '电信',
-      '联通',
-      '移动',
-      '铁通',
-      '广电',
-      '教育网',
-      '境内',
-      '境外',
-      '百度',
-      '谷歌',
-      '有道',
-      '必应',
-      '搜狗',
-      '奇虎',
-      '搜索引擎',
-    ],
-    default: '默认',
-  },
-];
 
 const RecordManager: React.FC<{
   visible: boolean;
   onOk: () => void;
   onCancel: () => void;
-  data?: DomainItem;
+  domain?: DomainItem;
 }> = (props) => {
-  const [form] = Form.useForm();
-  const [editProvider, { isLoading }] = useProviderEditMutation();
   const [add, setAdd] = useState(false);
+  const [lazyRecordList, { data, isLoading }] = useLazyRecordListQuery();
+  const [deleteRecord, { data: deleteData, isLoading: deleteLoading }] =
+    useRecordDeleteMutation();
+  const [createRecord, { isLoading: createIsLoading }] =
+    useRecordCreateMutation();
+  const [updateRecord, { isLoading: updateIsLoading }] =
+    useRecordUpdateMutation();
+  const [recordList, setRecordList] = useState<RecordItem[]>([]);
+
   useEffect(() => {
-    if (props.data) {
-      form.setFieldsValue(props.data);
-    } else {
-      form.resetFields();
+    if (props.domain) {
+      lazyRecordList(props.domain.id);
     }
-  }, [props.data]);
+  }, [props.domain]);
+
+  const extraFields: RecordExtraField[] = data?.data?.extra || [];
+
+  useEffect(() => {
+    const recordList: RecordItem[] = data?.data?.list
+      ? [...data.data.list]
+      : [];
+    if (add) {
+      const extra = {};
+      extraFields.forEach((field) => {
+        extra[field.key] = field.default;
+      });
+      recordList.unshift({
+        id: '',
+        name: '',
+        extra,
+        type: 'A',
+        value: '',
+        ttl: 0,
+      });
+    }
+    setRecordList(recordList);
+  }, [data, add]);
 
   const columns: ColumnProps<RecordItem>[] = [
     {
@@ -112,8 +119,13 @@ const RecordManager: React.FC<{
             rules={[{ required: true }]}
           >
             <Select>
-              <Select.Option value="A">A</Select.Option>
-              <Select.Option value="CNAME">CNAME</Select.Option>
+              {RecordTypes.map((type) => {
+                return (
+                  <Select.Option key={type} value={type}>
+                    {type}
+                  </Select.Option>
+                );
+              })}
             </Select>
           </FormItem>
         );
@@ -145,6 +157,9 @@ const RecordManager: React.FC<{
       title: 'TTL',
       dataIndex: 'ttl',
       editable: true,
+      render(col) {
+        return col === 1 ? '自动' : col;
+      },
       editRender(item) {
         return (
           <FormItem
@@ -161,19 +176,25 @@ const RecordManager: React.FC<{
         );
       },
     },
-    ...extraFields.map((field: any) => {
-      field.dataIndex = 'extra.record_line';
+    ...extraFields.map((field2: any) => {
+      const field = { ...field2 };
+      field.dataIndex = 'extra.' + field.key;
       field.editable = true;
-      const EditFormItem = ({ initialValue, children }) => {
+      const EditFormItem: React.FC<{
+        initialValue: any;
+        triggerPropName?: string;
+        children: React.ReactNode;
+      }> = ({ initialValue, triggerPropName, children }) => {
         return (
           <FormItem
-            key={field.key}
-            field={field.key}
+            key={'extra.' + field.key}
+            field={'extra.' + field.key}
             style={{ marginBottom: 0 }}
             labelCol={{ span: 0 }}
             wrapperCol={{ span: 24 }}
             initialValue={initialValue}
             rules={[{ required: true }]}
+            triggerPropName={triggerPropName}
           >
             {children}
           </FormItem>
@@ -195,6 +216,21 @@ const RecordManager: React.FC<{
             );
           };
           break;
+        case 'switch':
+          field.render = (col) => {
+            return <Switch checked={col} />;
+          };
+          field.editRender = (item) => {
+            return (
+              <EditFormItem
+                triggerPropName="checked"
+                initialValue={item.extra[field.key]}
+              >
+                <Switch />
+              </EditFormItem>
+            );
+          };
+          break;
         default:
           field.editable = false;
           break;
@@ -204,31 +240,130 @@ const RecordManager: React.FC<{
     {
       key: 'action',
       title: '操作',
-      render(item) {
+      render(_, item: RecordItem) {
+        const { getForm } = useContext(EditableContext);
         return (
           <Space>
-            <Button iconOnly type="text" icon={<IconPlus />} />
+            <Button
+              type="text"
+              onClick={() => {
+                setRecordList((list) => {
+                  return list.map((record) => {
+                    if (record.id === item.id) {
+                      return {
+                        ...record,
+                        edit: true,
+                      };
+                    }
+                    return record;
+                  });
+                });
+              }}
+            >
+              编辑
+            </Button>
+            <Popconfirm
+              title="确定删除吗？"
+              onOk={() => {
+                deleteRecord({
+                  domain_id: props.domain.id,
+                  record_id: item.id,
+                })
+                  .unwrap()
+                  .then(() => {
+                    Message.success('删除成功');
+                  });
+              }}
+            >
+              <Button type="text">删除</Button>
+            </Popconfirm>
           </Space>
         );
       },
       editRender(item) {
-        const { setEdit, getForm } = useContext(EditableContext);
+        const { getForm } = useContext(EditableContext);
         return (
           <Space>
             <Button
               type="primary"
+              loading={createIsLoading || updateIsLoading}
               onClick={() => {
-                console.log(getForm().getFieldsValue());
+                const values = getForm().getFieldsValue();
+                setRecordList((list) => {
+                  return list.map((record) => {
+                    if (record.id === item.id) {
+                      return {
+                        ...record,
+                        ...values,
+                      };
+                    }
+                    return record;
+                  });
+                });
+                if (item.id) {
+                  // update
+                  updateRecord({
+                    domain_id: props.domain.id,
+                    record_id: item.id,
+                    record: {
+                      type: values.type,
+                      name: values.name,
+                      value: values.value,
+                      ttl: parseInt(values.ttl as unknown as string, 10),
+                      extra: values.extra,
+                    },
+                  })
+                    .unwrap()
+                    .then(() => {
+                      Message.success('修改成功');
+                      setRecordList((list) => {
+                        return list.map((record) => {
+                          if (record.id === item.id) {
+                            return {
+                              ...record,
+                              edit: false,
+                            };
+                          }
+                          return record;
+                        });
+                      });
+                    });
+                } else {
+                  // add
+                  createRecord({
+                    domain_id: props.domain.id,
+                    record: {
+                      type: values.type,
+                      name: values.name,
+                      value: values.value,
+                      ttl: parseInt(values.ttl as unknown as string, 10),
+                      extra: values.extra,
+                    },
+                  })
+                    .unwrap()
+                    .then(() => {
+                      Message.success('添加成功');
+                    });
+                }
               }}
             >
-              保存
+              {item.id ? '修改' : '添加'}
             </Button>
             <Button
               type="text"
               onClick={() => {
-                setEdit(false);
                 if (!item.id) {
                   setAdd(false);
+                } else {
+                  // 还原记录
+                  setRecordList((list) => {
+                    return list.map((record) => {
+                      if (record.id === item.id) {
+                        return data.data.list.find((r) => r.id === item.id);
+                      }
+                      return record;
+                    });
+                  });
                 }
               }}
             >
@@ -242,15 +377,13 @@ const RecordManager: React.FC<{
 
   const EditableRow = (props) => {
     const { children, record, className, ...rest } = props;
-    const [edit, setEdit] = useState(record.id ? false : true);
-    const [form] = useForm();
+    const [form] = useForm<RecordItem>();
     const getForm = () => form;
     return (
       <EditableContext.Provider
+        key={record.id}
         value={{
           getForm,
-          edit: edit,
-          setEdit: setEdit,
         }}
       >
         <Form
@@ -267,85 +400,27 @@ const RecordManager: React.FC<{
 
   const EditableCell = (props) => {
     const { children, className, rowData, column, onHandleSave } = props;
-    const [show, setShow] = useState(false);
-    const { getForm, edit, setEdit } = React.useContext(EditableContext);
-
-    useEffect(() => {
-      setShow(false);
-    }, [edit]);
 
     return (
       <div
-        onMouseMove={() => {
-          setShow(true);
-        }}
-        onMouseLeave={() => {
-          setShow(false);
-        }}
+        key={column.key}
         className={'flex flex-row items-center gap-3 ' + className}
       >
-        {edit && column.editRender ? column.editRender(rowData) : children}
-        {show && column.editable && !edit ? (
-          <IconEdit
-            className="cursor-pointer"
-            onClick={() => {
-              setEdit(true);
-            }}
-          />
-        ) : (
-          <div style={{ width: '32px', height: '32px' }} />
-        )}
+        {rowData.edit && column.editRender
+          ? column.editRender(rowData)
+          : children}
       </div>
     );
   };
 
-  const data: RecordItem[] = [
-    {
-      id: '1',
-      name: '2',
-      value: '11',
-      extra: {
-        record_line: '默认',
-      },
-      type: 'A',
-      ttl: 0,
-    },
-    {
-      id: '1',
-      name: '2',
-      extra: {
-        record_line: '默认',
-      },
-      type: 'A',
-      value: '222',
-      ttl: 0,
-    },
-  ];
-
-  const recordList: RecordItem[] = data;
-  if (add) {
-    const extra = {};
-    extraFields.forEach((field) => {
-      extra[field.key] = field.default;
-    });
-    recordList.unshift({
-      id: '',
-      name: '',
-      extra,
-      type: 'A',
-      value: '',
-      ttl: 0,
-    });
-  }
-
   return (
     <Modal
-      title={'管理' + props.data?.name}
+      title={'管理' + props.domain?.domain}
       style={{ width: '70%' }}
       visible={props.visible}
-      confirmLoading={isLoading}
+      confirmLoading={isLoading || deleteLoading}
       onOk={async () => {
-        form.validate().then((res) => {});
+        props.onOk();
       }}
       onCancel={() => props.onCancel()}
     >

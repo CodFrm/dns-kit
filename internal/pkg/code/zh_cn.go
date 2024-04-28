@@ -19,4 +19,7 @@ var zhCN = map[int]string{
 
 	DomainNotFound:  "域名不存在",
 	DomainIsManaged: "域名已纳管",
+
+	RecordCreateFailed: "记录创建失败: %v",
+	RecordUpdateFailed: "记录更新失败: %v",
 }
