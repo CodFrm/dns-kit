@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/codfrm/dns-kit/docs"
 	"github.com/codfrm/dns-kit/internal/controller/cdn_ctr"

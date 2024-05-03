@@ -1,22 +1,14 @@
 package api
 
 import (
-	"github.com/codfrm/cago/server/mux"
-	"github.com/codfrm/dns-kit/frontend"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/codfrm/cago/server/mux"
+	"github.com/codfrm/dns-kit/frontend"
+	"github.com/gin-gonic/gin"
 )
-
-type wrapResponse struct {
-	gin.ResponseWriter
-	Code int `json:"code"`
-}
-
-func (w *wrapResponse) WriteHeader(statusCode int) {
-	w.Code = statusCode
-}
 
 // File 处理静态资源
 func File(root *mux.Router) error {
@@ -33,6 +25,7 @@ func File(root *mux.Router) error {
 		if err != nil {
 			c.Next()
 			if c.Writer.Status() != http.StatusNotFound {
+				return
 			}
 			// 重写到index.html
 			data, err = frontend.EmbedFS.ReadFile("dist/index.html")
