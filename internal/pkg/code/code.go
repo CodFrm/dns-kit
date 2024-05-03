@@ -23,3 +23,9 @@ const (
 	RecordCreateFailed
 	RecordUpdateFailed
 )
+
+// cert
+const (
+	InvalidDomain = iota + 40000
+	CertNotFound
+)

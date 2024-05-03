@@ -40,6 +40,6 @@ export const apiSlice = createApi({
   }),
   reducerPath: 'api',
   // Tag types are used for caching and invalidation.
-  tagTypes: ['User', 'Provider', 'CDN', 'Domain', 'Record'],
+  tagTypes: ['User', 'Provider', 'CDN', 'Domain', 'Record', 'Cert'],
   endpoints: (build) => ({}),
 });

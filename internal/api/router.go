@@ -3,6 +3,8 @@ package api
 import (
 	"context"
 
+	"github.com/codfrm/dns-kit/internal/controller/cert_ctr"
+
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/codfrm/dns-kit/docs"
 	"github.com/codfrm/dns-kit/internal/controller/domain_ctr"
@@ -71,6 +73,18 @@ func Router(ctx context.Context, root *mux.Router) error {
 			providerCtr.CreateProvider,
 			providerCtr.UpdateProvider,
 			providerCtr.DeleteProvider,
+		)
+	}
+
+	certCtr := cert_ctr.NewCert()
+	{
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
+			certCtr.List,
+		)
+
+		r.Group("/", user_svc.User().Middleware(true),
+			user_svc.User().AuditMiddleware("cert")).Bind(
+			certCtr.Create,
 		)
 	}
 

@@ -6,6 +6,91 @@
     },
     "basePath": "/api/v1",
     "paths": {
+        "/cert": {
+            "get": {
+                "description": "获取证书列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cert"
+                ],
+                "summary": "获取证书列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/cert.ListResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建证书",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cert"
+                ],
+                "summary": "创建证书",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/cert.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/cert.CreateResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
         "/domain": {
             "get": {
                 "description": "获取域名列表",
@@ -836,6 +921,39 @@
                 "msg": {
                     "description": "错误信息",
                     "type": "string"
+                }
+            }
+        },
+        "cert.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "description": "域名",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "cert.CreateResponse": {
+            "type": "object"
+        },
+        "cert.Item": {
+            "type": "object"
+        },
+        "cert.ListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/cert.Item"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

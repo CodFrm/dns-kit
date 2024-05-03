@@ -17,6 +17,7 @@ type DomainRepo interface {
 	Delete(ctx context.Context, id int64) error
 
 	FindByDomainID(ctx context.Context, id string) (*domain_entity.Domain, error)
+	FindByDomain(ctx context.Context, domain string) (*domain_entity.Domain, error)
 }
 
 var defaultDomain DomainRepo
@@ -75,6 +76,17 @@ func (d *domainRepo) FindPage(ctx context.Context, page httputils.PageRequest) (
 func (d *domainRepo) FindByDomainID(ctx context.Context, id string) (*domain_entity.Domain, error) {
 	ret := &domain_entity.Domain{}
 	if err := db.Ctx(ctx).Where("domain_id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
+		if db.RecordNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (d *domainRepo) FindByDomain(ctx context.Context, domain string) (*domain_entity.Domain, error) {
+	ret := &domain_entity.Domain{}
+	if err := db.Ctx(ctx).Where("domain=? and status=?", domain, consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}

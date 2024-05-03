@@ -17,9 +17,12 @@ var zhCN = map[int]string{
 	ProviderExist:       "供应商已存在",
 	ProviderNotFound:    "供应商不存在",
 
-	DomainNotFound:  "域名不存在",
+	DomainNotFound:  "域名不存在或者不在纳管中",
 	DomainIsManaged: "域名已纳管",
 
 	RecordCreateFailed: "记录创建失败: %v",
 	RecordUpdateFailed: "记录更新失败: %v",
+
+	InvalidDomain: "无效的域名",
+	CertNotFound:  "证书不存在",
 }

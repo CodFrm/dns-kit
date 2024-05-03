@@ -10,6 +10,28 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  cert.CreateRequest:
+    properties:
+      domain:
+        description: 域名
+        items:
+          type: string
+        type: array
+    type: object
+  cert.CreateResponse:
+    type: object
+  cert.Item:
+    type: object
+  cert.ListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/cert.Item'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
   dns.Extra:
     properties:
       default:
@@ -305,6 +327,60 @@ info:
   title: api文档
   version: "1.0"
 paths:
+  /cert:
+    get:
+      consumes:
+      - application/json
+      description: 获取证书列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.ListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取证书列表
+      tags:
+      - cert
+    post:
+      consumes:
+      - application/json
+      description: 创建证书
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/cert.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.CreateResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 创建证书
+      tags:
+      - cert
   /domain:
     get:
       consumes:

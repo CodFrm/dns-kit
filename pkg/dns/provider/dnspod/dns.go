@@ -69,14 +69,11 @@ func (m Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 	request.RecordLine = common.StringPtr(RecordLine)
 
 	// 返回的resp是一个CreateRecordResponse的实例，与请求对象对应
-	_, err = m.api.CreateRecord(request)
-	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		return err
-
-	}
+	resp, err := m.api.CreateRecord(request)
 	if err != nil {
 		return err
 	}
+	record.ID = strconv.FormatUint(*resp.Response.RecordId, 10)
 	return nil
 }
 

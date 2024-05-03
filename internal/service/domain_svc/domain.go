@@ -2,6 +2,9 @@ package domain_svc
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
@@ -16,8 +19,6 @@ import (
 	"github.com/codfrm/dns-kit/pkg/dns"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"sync"
-	"time"
 )
 
 type DomainSvc interface {

@@ -8,14 +8,13 @@ import (
 
 type Acme struct {
 	email      string
-	domain     []string
 	idn        []Identifier
 	challenges []Challenge
 	finalize   string
 	options    *Options
 }
 
-func NewAcme(email string, domain []string, opts ...Option) (*Acme, error) {
+func NewAcme(email string, opts ...Option) (*Acme, error) {
 	options, err := newOptions(opts...)
 	if err != nil {
 		return nil, err
@@ -34,7 +33,6 @@ func NewAcme(email string, domain []string, opts ...Option) (*Acme, error) {
 	}
 	return &Acme{
 		email:   email,
-		domain:  domain,
 		options: options,
 	}, nil
 }
@@ -46,7 +44,22 @@ type Challenge struct {
 	Record        string
 }
 
-func (a *Acme) GetChallenge(ctx context.Context) ([]Challenge, error) {
+func (a *Acme) NewAccount(ctx context.Context) (string, error) {
+	account, err := a.options.client.NewAccount(ctx, []string{
+		"mailto:" + a.email,
+	})
+	if err != nil {
+		return "", err
+	}
+	a.options.client.SetKid(account)
+	return account, nil
+}
+
+func (a *Acme) GetClient() *Client {
+	return a.options.client
+}
+
+func (a *Acme) GetChallenge(ctx context.Context, domain []string) ([]Challenge, error) {
 	if a.options.client.GetKid() == "" {
 		// 有kid跳过此步
 		account, err := a.options.client.NewAccount(ctx, []string{
@@ -59,7 +72,7 @@ func (a *Acme) GetChallenge(ctx context.Context) ([]Challenge, error) {
 	}
 	// 创建订单
 	a.idn = make([]Identifier, 0)
-	for _, v := range a.domain {
+	for _, v := range domain {
 		a.idn = append(a.idn, Identifier{
 			Type:  "dns",
 			Value: v,
@@ -89,7 +102,7 @@ func (a *Acme) GetChallenge(ctx context.Context) ([]Challenge, error) {
 					})
 				}
 			}
-			break
+			continue
 		}
 	}
 	return a.challenges, nil
@@ -107,26 +120,31 @@ func (a *Acme) WaitChallenge(ctx context.Context) error {
 		}
 		// 轮询验证结果
 		for {
-			auth, err := a.options.client.GetAuthorization(ctx, challenge.Authorization)
-			if err != nil {
-				return err
-			}
 			flag := false
-			for _, v := range auth.Challenges {
-				if v.Type == "dns-01" {
-					if v.Status == "valid" {
-						flag = true
-						break
-					}
-					if v.Status == "invalid" {
-						return ErrChallengeInvalid
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				auth, err := a.options.client.GetAuthorization(ctx, challenge.Authorization)
+				if err != nil {
+					return err
+				}
+				for _, v := range auth.Challenges {
+					if v.Type == "dns-01" {
+						if v.Status == "valid" {
+							flag = true
+							break
+						}
+						if v.Status == "invalid" {
+							return ErrChallengeInvalid
+						}
 					}
 				}
+				time.Sleep(time.Second * 5)
 			}
 			if flag {
 				break
 			}
-			time.Sleep(time.Second * 5)
 		}
 	}
 	return nil

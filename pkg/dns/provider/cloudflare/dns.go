@@ -86,10 +86,11 @@ func (d *Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 	if record.TTL == 0 {
 		record.TTL = 1
 	}
-	_, err := d.api.CreateDNSRecord(ctx, d.rc, param)
+	resp, err := d.api.CreateDNSRecord(ctx, d.rc, param)
 	if err != nil {
 		return err
 	}
+	record.ID = resp.ID
 	return nil
 }
 

@@ -2,13 +2,14 @@ package domain_svc
 
 import (
 	"context"
+	"sync"
+
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
 	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
 	"github.com/codfrm/dns-kit/pkg/dns"
 	"go.uber.org/zap"
-	"sync"
 
 	api "github.com/codfrm/dns-kit/internal/api/domain"
 )

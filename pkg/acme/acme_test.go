@@ -40,7 +40,7 @@ func TestNewAcme(t *testing.T) {
 		}, nil
 	})
 	ctx := context.Background()
-	acme, err := NewAcme("yz@ggnb.top", []string{"test2.ggnb.top"})
+	acme, err := NewAcme("yz@ggnb.top")
 	assert.NoError(t, err)
 	assert.NotNil(t, acme)
 	var cacheJws map[string]any
@@ -130,7 +130,7 @@ func TestNewAcme(t *testing.T) {
 			Body:       io.NopCloser(bytes.NewReader(respData)),
 		}, nil
 	})
-	challenges, err := acme.GetChallenge(ctx)
+	challenges, err := acme.GetChallenge(ctx, []string{"test2.ggnb.top"})
 	assert.NoError(t, err)
 	assert.NotNil(t, challenges)
 	assert.Equal(t, acme.options.client.DNS01ChallengeRecord("test"), challenges[0].Record)

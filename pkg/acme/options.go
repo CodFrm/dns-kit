@@ -62,6 +62,12 @@ type Options struct {
 	client *Client
 }
 
+func WithClient(client *Client) Option {
+	return func(options *Options) {
+		options.client = client
+	}
+}
+
 func newOptions(opts ...Option) (*Options, error) {
 	opt := &Options{}
 	for _, o := range opts {
