@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"bytes"
 	"context"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"github.com/codfrm/dns-kit/internal/service/cert_svc"
 	"net"
@@ -18,7 +21,7 @@ import (
 	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
 	"github.com/codfrm/dns-kit/internal/task/queue"
 	"github.com/codfrm/dns-kit/internal/task/queue/message"
-	"github.com/codfrm/dns-kit/pkg/dns"
+	"github.com/codfrm/dns-kit/pkg/platform"
 	"go.uber.org/zap"
 )
 
@@ -49,8 +52,7 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 	// 后续的错误都更新为申请失败
 	defer func() {
 		if err != nil {
-			cert.Status = cert_entity.CertStatusApplyFail
-			if err := cert_repo.Cert().Update(ctx, cert); err != nil {
+			if err := cert_repo.Cert().UpdateStatus(ctx, cert.ID, cert_entity.CertStatusApplyFail); err != nil {
 				logger.Error("update cert failed", zap.Error(err))
 			}
 		}
@@ -88,13 +90,13 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 			logger.Error("domain check failed", zap.Error(err))
 			return err
 		}
-		var manager dns.Manager
-		manager, err = domain.Factory(ctx)
+		var manager platform.DNSManager
+		manager, err = domain.DnsManager(ctx)
 		if err != nil {
 			logger.Error("domain factory failed", zap.Error(err))
 			return err
 		}
-		record := &dns.Record{
+		record := &platform.Record{
 			Type:  "TXT",
 			Value: v.Record,
 		}
@@ -105,7 +107,8 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 			record.Name = "_acme-challenge." + strings.TrimSuffix(v.Domain, "."+tld)
 		}
 		// 删除老的记录
-		recordList, err := manager.GetRecordList(ctx)
+		var recordList []*platform.Record
+		recordList, err = manager.GetRecordList(ctx)
 		if err != nil {
 			logger.Error("get record list failed", zap.Error(err))
 			return err
@@ -183,6 +186,23 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 	logger.Info("get certificate success")
 	// 保存证书与更新状态
 	cert.Certificate = string(certData)
+	buf := bytes.NewBuffer(nil)
+	if err = pem.Encode(buf, &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: acmeInstance.GetCSR()}); err != nil {
+		logger.Error("encode csr failed", zap.Error(err))
+		return err
+	}
+	cert.CertificateRequest = buf.String()
+	privateKey, err := x509.MarshalECPrivateKey(acmeInstance.GetPrivateKey())
+	if err != nil {
+		logger.Error("marshal private key failed", zap.Error(err))
+		return err
+	}
+	buf.Reset()
+	if err = pem.Encode(buf, &pem.Block{Type: "EC PRIVATE KEY", Bytes: privateKey}); err != nil {
+		logger.Error("encode private key failed", zap.Error(err))
+		return err
+	}
+	cert.PrivateKey = buf.String()
 	cert.Status = cert_entity.CertStatusActive
 	cert.Updatetime = time.Now().Unix()
 	if err = cert_repo.Cert().Update(ctx, cert); err != nil {

@@ -6,9 +6,9 @@ import (
 
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
-	"github.com/codfrm/dns-kit/pkg/dns"
-	"github.com/codfrm/dns-kit/pkg/dns/provider/cloudflare"
-	"github.com/codfrm/dns-kit/pkg/dns/provider/dnspod"
+	"github.com/codfrm/dns-kit/pkg/platform"
+	"github.com/codfrm/dns-kit/pkg/platform/provider/cloudflare"
+	"github.com/codfrm/dns-kit/pkg/platform/provider/tencent"
 )
 
 type Platform string
@@ -49,16 +49,33 @@ func (p *Provider) SecretMap() map[string]string {
 	return ret
 }
 
-func (p *Provider) Factory(ctx context.Context) (dns.DomainManager, error) {
+func (p *Provider) DomainManager(ctx context.Context) (platform.DomainManager, error) {
 	var (
-		manager dns.DomainManager
+		manager platform.DomainManager
 		err     error
 	)
 	switch p.Platform {
 	case PlatformCloudflare:
 		manager, err = cloudflare.NewCloudflare(p.SecretMap()["token"])
 	case PlatformTencent:
-		manager, err = dnspod.NewDnsPod(p.SecretMap()["secret_id"], p.SecretMap()["secret_key"])
+		manager, err = tencent.NewTencent(p.SecretMap()["secret_id"], p.SecretMap()["secret_key"])
+	default:
+		return nil, i18n.NewError(ctx, code.ProviderNotSupport)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return manager, nil
+}
+
+func (p *Provider) CDNManger(ctx context.Context) (platform.CDNManager, error) {
+	var (
+		manager platform.CDNManager
+		err     error
+	)
+	switch p.Platform {
+	case PlatformTencent:
+		manager, err = tencent.NewTencent(p.SecretMap()["secret_id"], p.SecretMap()["secret_key"])
 	default:
 		return nil, i18n.NewError(ctx, code.ProviderNotSupport)
 	}

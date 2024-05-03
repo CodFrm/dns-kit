@@ -75,6 +75,8 @@ const RecordManager: React.FC<{
         type: 'A',
         value: '',
         ttl: 0,
+        // @ts-ignore
+        edit: true,
       });
     }
     setRecordList(recordList);
@@ -342,6 +344,7 @@ const RecordManager: React.FC<{
                   })
                     .unwrap()
                     .then(() => {
+                      setAdd(false);
                       Message.success('添加成功');
                     });
                 }

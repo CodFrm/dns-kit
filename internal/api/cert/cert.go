@@ -35,3 +35,27 @@ type CreateRequest struct {
 // CreateResponse 创建证书响应
 type CreateResponse struct {
 }
+
+// DeleteRequest 删除证书
+type DeleteRequest struct {
+	mux.Meta `path:"/cert/:id" method:"DELETE"`
+	ID       int64 `uri:"id" binding:"required"`
+}
+
+// DeleteResponse 删除证书响应
+type DeleteResponse struct {
+}
+
+// DownloadRequest 下载证书
+type DownloadRequest struct {
+	mux.Meta `path:"/cert/:id/download" method:"GET"`
+	ID       int64 `uri:"id" binding:"required"`
+	Type     int   `form:"type"`
+}
+
+// DownloadResponse 下载证书响应
+type DownloadResponse struct {
+	CSR  string `json:"csr"`
+	Cert string `json:"data"`
+	Key  string `json:"key"`
+}

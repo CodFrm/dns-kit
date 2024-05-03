@@ -23,6 +23,10 @@ var zhCN = map[int]string{
 	RecordCreateFailed: "记录创建失败: %v",
 	RecordUpdateFailed: "记录更新失败: %v",
 
-	InvalidDomain: "无效的域名",
-	CertNotFound:  "证书不存在",
+	InvalidDomain:   "无效的域名",
+	CertNotFound:    "证书不存在",
+	CertNotActive:   "证书未激活",
+	CertStatusApply: "证书申请中",
+
+	CDNNotFound: "CDN不存在",
 }

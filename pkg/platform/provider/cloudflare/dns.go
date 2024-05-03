@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/codfrm/dns-kit/pkg/dns"
+	"github.com/codfrm/dns-kit/pkg/platform"
 )
 
 type Manager struct {
@@ -13,7 +13,7 @@ type Manager struct {
 	rc  *cloudflare.ResourceContainer
 }
 
-func NewDNSManager(api *cloudflare.API, rc *cloudflare.ResourceContainer) (dns.Manager, error) {
+func NewDNSManager(api *cloudflare.API, rc *cloudflare.ResourceContainer) (platform.DNSManager, error) {
 	return &Manager{
 		api: api,
 		rc:  rc,
@@ -41,23 +41,23 @@ func (d *Manager) allDNSRecords(ctx context.Context) ([]cloudflare.DNSRecord, er
 	return ret, nil
 }
 
-func (d *Manager) GetRecordList(ctx context.Context) ([]*dns.Record, error) {
+func (d *Manager) GetRecordList(ctx context.Context) ([]*platform.Record, error) {
 	records, err := d.allDNSRecords(ctx)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*dns.Record, 0, len(records))
+	ret := make([]*platform.Record, 0, len(records))
 	for _, record := range records {
 		ret = append(ret, d.toDNSRecord(record))
 	}
 	return ret, nil
 }
 
-func (d *Manager) toDNSRecord(record cloudflare.DNSRecord) *dns.Record {
-	ret := &dns.Record{
+func (d *Manager) toDNSRecord(record cloudflare.DNSRecord) *platform.Record {
+	ret := &platform.Record{
 		ID:    record.ID,
 		Name:  strings.TrimSuffix(record.Name, "."+record.ZoneName),
-		Type:  dns.RecordType(record.Type),
+		Type:  platform.RecordType(record.Type),
 		Value: record.Content,
 		TTL:   record.TTL,
 		Extra: map[string]any{},
@@ -70,7 +70,7 @@ func (d *Manager) toDNSRecord(record cloudflare.DNSRecord) *dns.Record {
 	return ret
 }
 
-func (d *Manager) AddRecord(ctx context.Context, record *dns.Record) error {
+func (d *Manager) AddRecord(ctx context.Context, record *platform.Record) error {
 	param := cloudflare.CreateDNSRecordParams{
 		Type:    string(record.Type),
 		Name:    record.Name,
@@ -94,7 +94,7 @@ func (d *Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 	return nil
 }
 
-func (d *Manager) UpdateRecord(ctx context.Context, recordId string, record *dns.Record) error {
+func (d *Manager) UpdateRecord(ctx context.Context, recordId string, record *platform.Record) error {
 	param := cloudflare.UpdateDNSRecordParams{
 		Type:    string(record.Type),
 		Name:    record.Name,
@@ -115,7 +115,7 @@ func (d *Manager) UpdateRecord(ctx context.Context, recordId string, record *dns
 	return nil
 }
 
-func (d *Manager) isProxied(record *dns.Record) bool {
+func (d *Manager) isProxied(record *platform.Record) bool {
 	ret, ok := record.Extra["proxied"].(bool)
 	if !ok {
 		return false
@@ -127,11 +127,11 @@ func (d *Manager) DelRecord(ctx context.Context, recordId string) error {
 	return d.api.DeleteDNSRecord(ctx, d.rc, recordId)
 }
 
-func (d *Manager) ExtraFields() []*dns.Extra {
-	return []*dns.Extra{{
+func (d *Manager) ExtraFields() []*platform.Extra {
+	return []*platform.Extra{{
 		Key:       "proxied",
 		Title:     "代理",
-		FieldType: dns.FieldTypeSwitch,
+		FieldType: platform.FieldTypeSwitch,
 		Default:   true,
 	}}
 }

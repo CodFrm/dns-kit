@@ -10,17 +10,92 @@ definitions:
         description: 错误信息
         type: string
     type: object
-  cert.CreateRequest:
+  cdn.AddRequest:
     properties:
       domain:
+        type: string
+      id:
+        type: string
+      provider_id:
+        type: integer
+    type: object
+  cdn.AddResponse:
+    type: object
+  cdn.DeleteRequest:
+    type: object
+  cdn.DeleteResponse:
+    type: object
+  cdn.Item:
+    type: object
+  cdn.ListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/cdn.Item'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  cdn.QueryItem:
+    properties:
+      domain:
+        type: string
+      id:
+        type: string
+      is_managed:
+        type: boolean
+      provider_id:
+        type: integer
+      provider_name:
+        type: string
+    type: object
+  cdn.QueryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/cdn.QueryItem'
+        type: array
+    type: object
+  cert.CreateRequest:
+    properties:
+      domains:
         description: 域名
         items:
           type: string
         type: array
+      email:
+        type: string
     type: object
   cert.CreateResponse:
     type: object
+  cert.DeleteRequest:
+    type: object
+  cert.DeleteResponse:
+    type: object
+  cert.DownloadResponse:
+    properties:
+      csr:
+        type: string
+      data:
+        type: string
+      key:
+        type: string
+    type: object
   cert.Item:
+    properties:
+      createtime:
+        type: integer
+      domains:
+        items:
+          type: string
+        type: array
+      email:
+        type: string
+      id:
+        type: integer
+      status:
+        $ref: '#/definitions/cert_entity.CertStatus'
     type: object
   cert.ListResponse:
     properties:
@@ -32,70 +107,8 @@ definitions:
       total:
         type: integer
     type: object
-  dns.Extra:
-    properties:
-      default:
-        type: any
-      field_type:
-        $ref: '#/definitions/dns.FieldType'
-      key:
-        type: string
-      options:
-        description: 选项，只有FieldTypeSelect时有效
-        items:
-          type: string
-        type: array
-      title:
-        type: string
-    type: object
-  dns.FieldType:
-    description: |-
-      FieldType enum type:
-      - FieldTypeText: text
-      - FieldTypeNumber: number
-      - FieldTypeSwitch: switch
-      - FieldTypeSelect: select
-    enum:
-    - text
-    - number
-    - switch
-    - select
-    type: string
-  dns.Record:
-    properties:
-      extra:
-        additionalProperties:
-          type: any
-        description: 额外字段，各个平台的特殊字段，例如dnspod支持线路、cloudflare支持代理
-        type: object
-      id:
-        type: string
-      name:
-        type: string
-      ttl:
-        type: integer
-      type:
-        $ref: '#/definitions/dns.RecordType'
-      value:
-        type: string
-    type: object
-  dns.RecordType:
-    description: |-
-      RecordType enum type:
-      - A: A
-      - AAAA: AAAA
-      - CNAME: CNAME
-      - TXT: TXT
-      - MX: MX
-      - NS: NS
-    enum:
-    - A
-    - AAAA
-    - CNAME
-    - TXT
-    - MX
-    - NS
-    type: string
+  cert_entity.CertStatus:
+    type: integer
   domain.AddRequest:
     properties:
       domain:
@@ -118,7 +131,7 @@ definitions:
       ttl:
         type: integer
       type:
-        $ref: '#/definitions/dns.RecordType'
+        $ref: '#/definitions/platform.RecordType'
       value:
         type: string
     type: object
@@ -175,11 +188,11 @@ definitions:
     properties:
       extra:
         items:
-          $ref: '#/definitions/dns.Extra'
+          $ref: '#/definitions/platform.Extra'
         type: array
       list:
         items:
-          $ref: '#/definitions/dns.Record'
+          $ref: '#/definitions/platform.Record'
         type: array
     type: object
   domain.UpdateRecordRequest:
@@ -193,7 +206,7 @@ definitions:
       ttl:
         type: integer
       type:
-        $ref: '#/definitions/dns.RecordType'
+        $ref: '#/definitions/platform.RecordType'
       value:
         type: string
     type: object
@@ -223,6 +236,70 @@ definitions:
       total:
         type: integer
     type: object
+  platform.Extra:
+    properties:
+      default:
+        type: any
+      field_type:
+        $ref: '#/definitions/platform.FieldType'
+      key:
+        type: string
+      options:
+        description: 选项，只有FieldTypeSelect时有效
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  platform.FieldType:
+    description: |-
+      FieldType enum type:
+      - FieldTypeText: text
+      - FieldTypeNumber: number
+      - FieldTypeSwitch: switch
+      - FieldTypeSelect: select
+    enum:
+    - text
+    - number
+    - switch
+    - select
+    type: string
+  platform.Record:
+    properties:
+      extra:
+        additionalProperties:
+          type: any
+        description: 额外字段，各个平台的特殊字段，例如dnspod支持线路、cloudflare支持代理
+        type: object
+      id:
+        type: string
+      name:
+        type: string
+      ttl:
+        type: integer
+      type:
+        $ref: '#/definitions/platform.RecordType'
+      value:
+        type: string
+    type: object
+  platform.RecordType:
+    description: |-
+      RecordType enum type:
+      - A: A
+      - AAAA: AAAA
+      - CNAME: CNAME
+      - TXT: TXT
+      - MX: MX
+      - NS: NS
+    enum:
+    - A
+    - AAAA
+    - CNAME
+    - TXT
+    - MX
+    - NS
+    type: string
   provider.CreateProviderRequest:
     properties:
       name:
@@ -327,6 +404,119 @@ info:
   title: api文档
   version: "1.0"
 paths:
+  /cdn:
+    get:
+      consumes:
+      - application/json
+      description: 获取纳管的cdn列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cdn.ListResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 获取纳管的cdn列表
+      tags:
+      - cdn
+    post:
+      consumes:
+      - application/json
+      description: 添加cdn进入纳管
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/cdn.AddRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cdn.AddResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 添加cdn进入纳管
+      tags:
+      - cdn
+  /cdn/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除cdn
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/cdn.DeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cdn.DeleteResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除cdn
+      tags:
+      - cdn
+  /cdn/query:
+    get:
+      consumes:
+      - application/json
+      description: 查询cdn
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cdn.QueryResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 查询cdn
+      tags:
+      - cdn
   /cert:
     get:
       consumes:
@@ -379,6 +569,73 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 创建证书
+      tags:
+      - cert
+  /cert/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除证书
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/cert.DeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.DeleteResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除证书
+      tags:
+      - cert
+  /cert/{id}/download:
+    get:
+      consumes:
+      - application/json
+      description: 下载证书
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.DownloadResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 下载证书
       tags:
       - cert
   /domain:

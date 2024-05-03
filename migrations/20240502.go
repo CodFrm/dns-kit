@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"github.com/codfrm/dns-kit/internal/model/entity/acme_entity"
+	"github.com/codfrm/dns-kit/internal/model/entity/cdn_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/cert_entity"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
@@ -9,11 +10,12 @@ import (
 
 func T20240427() *gormigrate.Migration {
 	return &gormigrate.Migration{
-		ID: "20240427",
+		ID: "20240502",
 		Migrate: func(tx *gorm.DB) error {
 			entities := []any{
 				&cert_entity.Cert{},
 				&acme_entity.Acme{},
+				&cdn_entity.Cdn{},
 			}
 			for _, entity := range entities {
 				if err := tx.Migrator().AutoMigrate(entity); err != nil {

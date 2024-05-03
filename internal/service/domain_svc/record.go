@@ -8,7 +8,7 @@ import (
 	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
 	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
-	"github.com/codfrm/dns-kit/pkg/dns"
+	"github.com/codfrm/dns-kit/pkg/platform"
 	"go.uber.org/zap"
 
 	api "github.com/codfrm/dns-kit/internal/api/domain"
@@ -41,7 +41,7 @@ func (r *recordSvc) RecordList(ctx context.Context, req *api.RecordListRequest) 
 	if err != nil {
 		return nil, err
 	}
-	dnsManager, err := domain.Factory(ctx)
+	dnsManager, err := domain.DnsManager(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -61,11 +61,11 @@ func (r *recordSvc) CreateRecord(ctx context.Context, req *api.CreateRecordReque
 	if err != nil {
 		return nil, err
 	}
-	dnsManager, err := domain.Factory(ctx)
+	dnsManager, err := domain.DnsManager(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := dnsManager.AddRecord(ctx, &dns.Record{
+	if err := dnsManager.AddRecord(ctx, &platform.Record{
 		Type:  req.Type,
 		Name:  req.Name,
 		Value: req.Value,
@@ -84,11 +84,11 @@ func (r *recordSvc) UpdateRecord(ctx context.Context, req *api.UpdateRecordReque
 	if err != nil {
 		return nil, err
 	}
-	dnsManager, err := domain.Factory(ctx)
+	dnsManager, err := domain.DnsManager(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := dnsManager.UpdateRecord(ctx, req.RecordID, &dns.Record{
+	if err := dnsManager.UpdateRecord(ctx, req.RecordID, &platform.Record{
 		Type:  req.Type,
 		Name:  req.Name,
 		Value: req.Value,
@@ -107,7 +107,7 @@ func (r *recordSvc) DeleteRecord(ctx context.Context, req *api.DeleteRecordReque
 	if err != nil {
 		return nil, err
 	}
-	dnsManager, err := domain.Factory(ctx)
+	dnsManager, err := domain.DnsManager(ctx)
 	if err != nil {
 		return nil, err
 	}

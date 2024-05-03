@@ -1,11 +1,11 @@
-package dnspod
+package tencent
 
 import (
 	"context"
 	"fmt"
 	"strconv"
 
-	"github.com/codfrm/dns-kit/pkg/dns"
+	"github.com/codfrm/dns-kit/pkg/platform"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
@@ -16,7 +16,14 @@ type Manager struct {
 	rc  *dnspod.DomainInfo
 }
 
-func (m Manager) GetRecordList(ctx context.Context) ([]*dns.Record, error) {
+func NewDNSManager(api *dnspod.Client, rc *dnspod.DomainInfo) (platform.DNSManager, error) {
+	return &Manager{
+		api: api,
+		rc:  rc,
+	}, nil
+}
+
+func (m Manager) GetRecordList(ctx context.Context) ([]*platform.Record, error) {
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := dnspod.NewDescribeRecordListRequest()
 	request.SetContext(ctx)
@@ -31,11 +38,11 @@ func (m Manager) GetRecordList(ctx context.Context) ([]*dns.Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	records := make([]*dns.Record, 0, len(response.Response.RecordList))
+	records := make([]*platform.Record, 0, len(response.Response.RecordList))
 	for _, record := range response.Response.RecordList {
-		records = append(records, &dns.Record{
+		records = append(records, &platform.Record{
 			ID:    strconv.FormatUint(*record.RecordId, 10),
-			Type:  dns.RecordType(*record.Type),
+			Type:  platform.RecordType(*record.Type),
 			Name:  *record.Name,
 			Value: *record.Value,
 			TTL:   int(*record.TTL),
@@ -45,15 +52,12 @@ func (m Manager) GetRecordList(ctx context.Context) ([]*dns.Record, error) {
 	return records, nil
 }
 
-func (m Manager) AddRecord(ctx context.Context, record *dns.Record) error {
+func (m Manager) AddRecord(ctx context.Context, record *platform.Record) error {
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := dnspod.NewCreateRecordRequest()
-	atoi, err := strconv.ParseUint(record.ID, 10, 64)
-	if err != nil {
-		return err
-	}
 	//域名id
-	request.DomainId = common.Uint64Ptr(atoi)
+	request.DomainId = m.rc.DomainId
+	request.Domain = common.StringPtr(*m.rc.Domain)
 	//记录类型，通过 API 记录类型获得，大写英文，比如：A 。
 	request.RecordType = common.StringPtr(string(record.Type))
 	//主机记录，如 www，如果不传，默认为 @。
@@ -64,7 +68,7 @@ func (m Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 	request.Value = common.StringPtr(record.Value)
 	RecordLine, ok := record.Extra["RecordLine"].(string)
 	if !ok {
-		return nil
+		RecordLine = "默认"
 	}
 	request.RecordLine = common.StringPtr(RecordLine)
 
@@ -77,7 +81,7 @@ func (m Manager) AddRecord(ctx context.Context, record *dns.Record) error {
 	return nil
 }
 
-func (m Manager) UpdateRecord(ctx context.Context, recordId string, record *dns.Record) error {
+func (m Manager) UpdateRecord(ctx context.Context, recordId string, record *platform.Record) error {
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := dnspod.NewModifyRecordRequest()
 	request.SetContext(ctx)
@@ -131,12 +135,12 @@ func (m Manager) DelRecord(ctx context.Context, recordId string) error {
 	return nil
 }
 
-func (m Manager) ExtraFields() []*dns.Extra {
+func (m Manager) ExtraFields() []*platform.Extra {
 	//额外字段:线路
-	return []*dns.Extra{{
+	return []*platform.Extra{{
 		Key:       "line",
 		Title:     "线路",
-		FieldType: dns.FieldTypeSelect,
+		FieldType: platform.FieldTypeSelect,
 		Options: []string{
 			"默认",
 			"电信", "联通", "移动", "铁通", "广电", "教育网", "境内", "境外",
@@ -144,11 +148,4 @@ func (m Manager) ExtraFields() []*dns.Extra {
 		},
 		Default: "默认",
 	}}
-}
-
-func NewDNSManager(api *dnspod.Client, rc *dnspod.DomainInfo) (dns.Manager, error) {
-	return &Manager{
-		api: api,
-		rc:  rc,
-	}, nil
 }

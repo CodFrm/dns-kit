@@ -1,4 +1,4 @@
-package dns
+package platform
 
 // RecordType 记录类型
 type RecordType string

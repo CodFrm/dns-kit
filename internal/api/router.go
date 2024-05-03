@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/codfrm/dns-kit/internal/controller/cdn_ctr"
 
 	"github.com/codfrm/dns-kit/internal/controller/cert_ctr"
 
@@ -85,6 +86,22 @@ func Router(ctx context.Context, root *mux.Router) error {
 		r.Group("/", user_svc.User().Middleware(true),
 			user_svc.User().AuditMiddleware("cert")).Bind(
 			certCtr.Create,
+			certCtr.Delete,
+			certCtr.Download,
+		)
+	}
+
+	cdnCtr := cdn_ctr.NewCdn()
+	{
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
+			cdnCtr.List,
+			cdnCtr.Query,
+		)
+
+		r.Group("/", user_svc.User().Middleware(true),
+			user_svc.User().AuditMiddleware("cdn")).Bind(
+			cdnCtr.Add,
+			cdnCtr.Delete,
 		)
 	}
 

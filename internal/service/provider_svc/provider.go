@@ -80,7 +80,7 @@ func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProvide
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
 	}
-	manager, err := provider2.Factory(ctx)
+	manager, err := provider2.DomainManager(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (p *providerSvc) UpdateProvider(ctx context.Context, req *api.UpdateProvide
 	}
 	provider.Name = req.Name
 	if len(req.Secret) > 0 {
-		manager, err := provider.Factory(ctx)
+		manager, err := provider.DomainManager(ctx)
 		if err != nil {
 			return nil, err
 		}

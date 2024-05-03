@@ -14,6 +14,7 @@ type CertRepo interface {
 	FindPage(ctx context.Context, page httputils.PageRequest) ([]*cert_entity.Cert, int64, error)
 	Create(ctx context.Context, cert *cert_entity.Cert) error
 	Update(ctx context.Context, cert *cert_entity.Cert) error
+	UpdateStatus(ctx context.Context, id int64, status int32) error
 	Delete(ctx context.Context, id int64) error
 
 	FindByStatus(ctx context.Context, apply int) ([]*cert_entity.Cert, error)
@@ -78,4 +79,8 @@ func (u *certRepo) FindByStatus(ctx context.Context, apply int) ([]*cert_entity.
 		return nil, err
 	}
 	return list, nil
+}
+
+func (u *certRepo) UpdateStatus(ctx context.Context, id int64, status int32) error {
+	return db.Ctx(ctx).Model(&cert_entity.Cert{}).Where("id=?", id).Update("status", status).Error
 }

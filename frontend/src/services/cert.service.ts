@@ -27,7 +27,20 @@ export const certApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ['Cert'],
     }),
+    certDelete: build.mutation<ApiResponse, number>({
+      query(id) {
+        return {
+          url: `/cert/${id}`,
+          method: 'DELETE',
+        };
+      },
+      invalidatesTags: ['Cert'],
+    }),
   }),
 });
 
-export const { useCertListQuery, useCertCreateMutation } = certApiSlice;
+export const {
+  useCertListQuery,
+  useCertCreateMutation,
+  useCertDeleteMutation,
+} = certApiSlice;

@@ -2,6 +2,7 @@ package domain_svc
 
 import (
 	"context"
+	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
 	"sync"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/codfrm/dns-kit/internal/pkg/code"
 	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
 	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
-	"github.com/codfrm/dns-kit/pkg/dns"
+	"github.com/codfrm/dns-kit/pkg/platform"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -74,6 +75,8 @@ func (d *domainSvc) Query(ctx context.Context, req *api.QueryRequest) (*api.Quer
 	// 获取供应商信息
 	provides, _, err := provider_repo.Provider().FindPage(ctx, httputils.PageRequest{
 		Size: 100,
+	}, func(filter *provider_repo.FindPageFilters) {
+		filter.Platform = []provider_entity.Platform{provider_entity.PlatformTencent, provider_entity.PlatformCloudflare}
 	})
 	if err != nil {
 		return nil, err
@@ -94,7 +97,7 @@ func (d *domainSvc) Query(ctx context.Context, req *api.QueryRequest) (*api.Quer
 	}
 	// 获取域名信息
 	for _, v := range provides {
-		manager, err := v.Factory(ctx)
+		manager, err := v.DomainManager(ctx)
 		if err != nil {
 			logger.Ctx(ctx).Error("provider_svc.NewProvider", zap.Error(err))
 			continue
@@ -138,11 +141,11 @@ func (d *domainSvc) Add(ctx context.Context, req *api.AddRequest) (*api.AddRespo
 	if err := provider.Check(ctx); err != nil {
 		return nil, err
 	}
-	manager, err := provider.Factory(ctx)
+	manager, err := provider.DomainManager(ctx)
 	if err != nil {
 		return nil, err
 	}
-	dnsManager, err := manager.BuildDNSManager(ctx, &dns.Domain{
+	dnsManager, err := manager.BuildDNSManager(ctx, &platform.Domain{
 		ID:     req.DomainID,
 		Domain: req.Domain,
 	})

@@ -9,9 +9,15 @@ import (
 	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
 )
 
+type FindPageFilter func(filter *FindPageFilters)
+
+type FindPageFilters struct {
+	Platform []provider_entity.Platform
+}
+
 type ProviderRepo interface {
 	Find(ctx context.Context, id int64) (*provider_entity.Provider, error)
-	FindPage(ctx context.Context, page httputils.PageRequest) ([]*provider_entity.Provider, int64, error)
+	FindPage(ctx context.Context, page httputils.PageRequest, filter ...FindPageFilter) ([]*provider_entity.Provider, int64, error)
 	Create(ctx context.Context, provider *provider_entity.Provider) error
 	Update(ctx context.Context, provider *provider_entity.Provider) error
 	Delete(ctx context.Context, id int64) error
@@ -59,10 +65,17 @@ func (u *providerRepo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Model(&provider_entity.Provider{}).Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
-func (u *providerRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*provider_entity.Provider, int64, error) {
+func (u *providerRepo) FindPage(ctx context.Context, page httputils.PageRequest, filter ...FindPageFilter) ([]*provider_entity.Provider, int64, error) {
+	filters := &FindPageFilters{}
+	for _, f := range filter {
+		f(filters)
+	}
 	var list []*provider_entity.Provider
 	var count int64
 	find := db.Ctx(ctx).Model(&provider_entity.Provider{}).Where("status=?", consts.ACTIVE)
+	if len(filters.Platform) != 0 {
+		find = find.Where("platform in (?)", filters.Platform)
+	}
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

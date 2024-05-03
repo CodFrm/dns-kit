@@ -36,13 +36,15 @@ func (d GORMStringSlice) Value() (driver.Value, error) {
 }
 
 type Cert struct {
-	ID          int64           `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	Email       string          `gorm:"column:email;type:varchar(255);not null"`          // 邮箱
-	Domains     GORMStringSlice `gorm:"column:domains;type:varchar(255)"`                 // 域名列表
-	Certificate string          `gorm:"column:certificate;type:text"`                     // 证书
-	Status      CertStatus      `gorm:"column:status;type:tinyint(4);default:0;not null"` // 状态
-	Createtime  int64           `gorm:"column:createtime;type:bigint(20)"`
-	Updatetime  int64           `gorm:"column:updatetime;type:bigint(20)"`
+	ID                 int64           `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	Email              string          `gorm:"column:email;type:varchar(255);not null"`          // 邮箱
+	Domains            GORMStringSlice `gorm:"column:domains;type:varchar(255)"`                 // 域名列表
+	Certificate        string          `gorm:"column:certificate;type:text"`                     // 证书
+	CertificateRequest string          `gorm:"column:certificate_request;type:text"`             // 证书请求
+	PrivateKey         string          `gorm:"column:private_key;type:text"`                     // 私钥
+	Status             CertStatus      `gorm:"column:status;type:tinyint(4);default:0;not null"` // 状态
+	Createtime         int64           `gorm:"column:createtime;type:bigint(20)"`
+	Updatetime         int64           `gorm:"column:updatetime;type:bigint(20)"`
 }
 
 func (c *Cert) Check(ctx context.Context) error {

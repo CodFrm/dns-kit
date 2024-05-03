@@ -28,4 +28,11 @@ const (
 const (
 	InvalidDomain = iota + 40000
 	CertNotFound
+	CertNotActive
+	CertStatusApply
+)
+
+// cdn
+const (
+	CDNNotFound = iota + 50000
 )

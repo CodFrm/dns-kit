@@ -1,9 +1,11 @@
 package acme_entity
 
 import (
+	"bytes"
 	"crypto/ecdsa"
-	"crypto/elliptic"
-	"encoding/json"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"github.com/codfrm/dns-kit/pkg/acme"
 	"math/big"
 )
@@ -26,19 +28,15 @@ type PrivateKeyJson struct {
 
 func (a *Acme) NewACME() (*acme.Acme, error) {
 	var client *acme.Client
-	privateKeyJson := &PrivateKeyJson{}
-	err := json.Unmarshal([]byte(a.PrivateKey), privateKeyJson)
+	block, _ := pem.Decode([]byte(a.PrivateKey))
+	if block == nil {
+		return nil, errors.New("failed to parse private key PEM")
+	}
+	privateKey, err := x509.ParseECPrivateKey(block.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	client, err = acme.NewClient(acme.WithKid(a.Kid), acme.WithPrivateKey(&ecdsa.PrivateKey{
-		PublicKey: ecdsa.PublicKey{
-			Curve: elliptic.P256(),
-			X:     privateKeyJson.PX,
-			Y:     privateKeyJson.PY,
-		},
-		D: privateKeyJson.D,
-	}))
+	client, err = acme.NewClient(acme.WithKid(a.Kid), acme.WithPrivateKey(privateKey))
 	if err != nil {
 		return nil, err
 	}
@@ -46,14 +44,14 @@ func (a *Acme) NewACME() (*acme.Acme, error) {
 }
 
 func (a *Acme) SavePrivateKey(privateKey *ecdsa.PrivateKey) error {
-	privateKeyData, err := json.Marshal(&PrivateKeyJson{
-		PX: privateKey.PublicKey.X,
-		PY: privateKey.PublicKey.Y,
-		D:  privateKey.D,
-	})
+	data, err := x509.MarshalECPrivateKey(privateKey)
 	if err != nil {
 		return err
 	}
-	a.PrivateKey = string(privateKeyData)
+	buf := bytes.NewBuffer(nil)
+	if err := pem.Encode(buf, &pem.Block{Type: "PRIVATE KEY", Bytes: data}); err != nil {
+		return err
+	}
+	a.PrivateKey = buf.String()
 	return nil
 }

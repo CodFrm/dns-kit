@@ -2,6 +2,7 @@ package acme
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"errors"
 	"time"
 )
@@ -12,6 +13,8 @@ type Acme struct {
 	challenges []Challenge
 	finalize   string
 	options    *Options
+	csr        []byte
+	privateKey *ecdsa.PrivateKey
 }
 
 func NewAcme(email string, opts ...Option) (*Acme, error) {
@@ -152,12 +155,13 @@ func (a *Acme) WaitChallenge(ctx context.Context) error {
 
 func (a *Acme) GetCertificate(ctx context.Context) ([]byte, error) {
 	// 创建证书请求
-	csr, _, err := CreateCertificateRequest(a.idn)
+	var err error
+	a.csr, a.privateKey, err = CreateCertificateRequest(a.idn)
 	if err != nil {
 		return nil, err
 	}
 	// 完成订单
-	order, err := a.options.client.Finalize(ctx, a.finalize, csr)
+	order, err := a.options.client.Finalize(ctx, a.finalize, a.csr)
 	if err != nil {
 		return nil, err
 	}
@@ -167,4 +171,12 @@ func (a *Acme) GetCertificate(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 	return cert, nil
+}
+
+func (a *Acme) GetCSR() []byte {
+	return a.csr
+}
+
+func (a *Acme) GetPrivateKey() *ecdsa.PrivateKey {
+	return a.privateKey
 }

@@ -1,4 +1,4 @@
-package dns
+package platform
 
 import "context"
 
@@ -6,14 +6,14 @@ import "context"
 type DomainManager interface {
 	// GetDomainList 获取域名列表
 	GetDomainList(ctx context.Context) ([]*Domain, error)
-	// BuildDNSManager 构建dns域名管理器
-	BuildDNSManager(ctx context.Context, domain *Domain) (Manager, error)
+	// BuildDNSManager 构建dns管理器
+	BuildDNSManager(ctx context.Context, domain *Domain) (DNSManager, error)
 	// UserDetails 获取用户信息
 	UserDetails(ctx context.Context) (*User, error)
 }
 
-// Manager dns管理器
-type Manager interface {
+// DNSManager dns管理器
+type DNSManager interface {
 	// GetRecordList 获取记录列表 获取所有记录
 	GetRecordList(ctx context.Context) ([]*Record, error)
 	// AddRecord 添加记录

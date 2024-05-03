@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Button,
   Card,
+  Message,
   Popconfirm,
   Space,
   Table,
@@ -14,7 +15,11 @@ import {
   IconPlus,
 } from '@arco-design/web-react/icon';
 import Title from '@arco-design/web-react/es/Typography/title';
-import { CertItem, useCertListQuery } from '@/services/cert.service';
+import {
+  CertItem,
+  useCertDeleteMutation,
+  useCertListQuery,
+} from '@/services/cert.service';
 import CreateForm from './create-form';
 
 function Apply() {
@@ -68,6 +73,7 @@ function Apply() {
       key: 'action',
       title: '操作',
       render(col, item) {
+        const [deleteCert, { isLoading }] = useCertDeleteMutation();
         return (
           <Space key={item.id}>
             <Button
@@ -75,16 +81,23 @@ function Apply() {
               style={{ color: 'var(--color-text-2)' }}
               iconOnly
               icon={<IconDownload />}
-              onClick={() => {}}
+              href={'/api/v1/cert/' + item.id + '/download'}
             />
             <Popconfirm
               focusLock
               title="确定"
               content="确认删除吗？删除后相关的资源也会被删除"
-              onOk={() => {}}
+              onOk={() => {
+                deleteCert(item.id)
+                  .unwrap()
+                  .then(() => {
+                    Message.success('删除成功');
+                  });
+              }}
             >
               <Button
                 type="text"
+                loading={isLoading}
                 style={{ color: 'var(--color-text-2)' }}
                 iconOnly
                 icon={<IconDelete />}

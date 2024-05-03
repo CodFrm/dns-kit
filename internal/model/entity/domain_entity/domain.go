@@ -6,7 +6,7 @@ import (
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
 	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
-	"github.com/codfrm/dns-kit/pkg/dns"
+	"github.com/codfrm/dns-kit/pkg/platform"
 )
 
 type Domain struct {
@@ -26,7 +26,7 @@ func (d *Domain) Check(ctx context.Context) error {
 	return nil
 }
 
-func (d *Domain) Factory(ctx context.Context) (dns.Manager, error) {
+func (d *Domain) DnsManager(ctx context.Context) (platform.DNSManager, error) {
 	provider, err := provider_repo.Provider().Find(ctx, d.ProviderID)
 	if err != nil {
 		return nil, err
@@ -34,11 +34,11 @@ func (d *Domain) Factory(ctx context.Context) (dns.Manager, error) {
 	if err := provider.Check(ctx); err != nil {
 		return nil, err
 	}
-	manager, err := provider.Factory(ctx)
+	manager, err := provider.DomainManager(ctx)
 	if err != nil {
 		return nil, err
 	}
-	dnsManager, err := manager.BuildDNSManager(ctx, &dns.Domain{
+	dnsManager, err := manager.BuildDNSManager(ctx, &platform.Domain{
 		ID:     d.DomainID,
 		Domain: d.Domain,
 	})

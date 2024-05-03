@@ -31,6 +31,10 @@ type CertSvc interface {
 	Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error)
 	// NewACME 创建ACME
 	NewACME(ctx context.Context, email string) (*acme.Acme, error)
+	// Download 下载证书
+	Download(ctx context.Context, req *api.DownloadRequest) (*api.DownloadResponse, error)
+	// Delete 删除证书
+	Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error)
 }
 
 type certSvc struct {
@@ -137,4 +141,39 @@ func (c *certSvc) NewACME(ctx context.Context, email string) (*acme.Acme, error)
 		return nil, err
 	}
 	return acmeInstance, nil
+}
+
+// Download 下载证书
+func (c *certSvc) Download(ctx context.Context, req *api.DownloadRequest) (*api.DownloadResponse, error) {
+	cert, err := cert_repo.Cert().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := cert.Check(ctx); err != nil {
+		return nil, err
+	}
+	if cert.Status != cert_entity.CertStatusActive {
+		return nil, i18n.NewError(ctx, code.CertNotActive)
+	}
+	_ = audit.Ctx(ctx).Record("download", zap.Int64("id", req.ID))
+	return &api.DownloadResponse{Cert: cert.Certificate, CSR: cert.CertificateRequest, Key: cert.PrivateKey}, nil
+}
+
+// Delete 删除证书
+func (c *certSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error) {
+	cert, err := cert_repo.Cert().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := cert.Check(ctx); err != nil {
+		return nil, err
+	}
+	if cert.Status == cert_entity.CertStatusApply {
+		return nil, i18n.NewError(ctx, code.CertStatusApply)
+	}
+	if err := cert_repo.Cert().Delete(ctx, req.ID); err != nil {
+		return nil, err
+	}
+	_ = audit.Ctx(ctx).Record("delete", zap.Int64("id", req.ID))
+	return nil, nil
 }

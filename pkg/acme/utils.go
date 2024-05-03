@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func CreateCertificateRequest(auth []Identifier) ([]byte, *ecdsa.PrivateKey, error) {
@@ -23,6 +24,7 @@ func CreateCertificateRequest(auth []Identifier) ([]byte, *ecdsa.PrivateKey, err
 	if err != nil {
 		return nil, nil, err
 	}
+	autocert.NewListener()
 	return b, k, nil
 }
 
