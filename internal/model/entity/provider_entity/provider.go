@@ -19,7 +19,7 @@ const (
 )
 
 type Provider struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	ID         int64  `gorm:"column:id;not null;primary_key"`
 	Name       string `gorm:"column:name;type:varchar(128);not null"`    // 名称
 	UserID     string `gorm:"column:user_id;type:varchar(128);not null"` // 平台用户id
 	Secret     string `gorm:"column:secret;type:varchar(256);not null"`  // 密钥信息(JSON格式保存)

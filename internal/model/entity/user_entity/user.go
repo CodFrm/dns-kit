@@ -2,14 +2,13 @@ package user_entity
 
 import (
 	"context"
-
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
 )
 
 type User struct {
-	ID             int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	ID             int64  `gorm:"column:id;not null;primary_key"`
 	Username       string `gorm:"column:username;type:varchar(255);index:username,unique;not null"`
 	HashedPassword string `gorm:"column:hashed_password;type:varchar(255);not null"`
 	Status         int    `gorm:"column:status;type:int(11);not null"`

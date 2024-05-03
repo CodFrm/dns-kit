@@ -56,5 +56,6 @@ ifeq ($(GOOS),windows)
 endif
 
 build:
+	# 构建前端
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(APP_NAME)_v$(APP_VERSION)$(SUFFIX) ./cmd/app
 

@@ -19,7 +19,7 @@ const (
 
 // CertHosting 证书托管
 type CertHosting struct {
-	ID         int64             `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	ID         int64             `gorm:"column:id;not null;primary_key"`
 	Email      string            `gorm:"column:email;type:varchar(255);not null"`          // 邮箱
 	CdnID      int64             `gorm:"column:cdn_id;type:bigint(20);not null"`           // CDN ID
 	CertID     int64             `gorm:"column:cert_id;type:bigint(20);default:0"`         // 关联的证书 ID

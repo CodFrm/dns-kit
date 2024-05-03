@@ -36,7 +36,7 @@ func (d GORMStringSlice) Value() (driver.Value, error) {
 }
 
 type Cert struct {
-	ID                 int64           `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	ID                 int64           `gorm:"column:id;not null;primary_key"`
 	Email              string          `gorm:"column:email;type:varchar(255);not null"`          // 邮箱
 	Domains            GORMStringSlice `gorm:"column:domains;type:varchar(255)"`                 // 域名列表
 	Certificate        string          `gorm:"column:certificate;type:text"`                     // 证书

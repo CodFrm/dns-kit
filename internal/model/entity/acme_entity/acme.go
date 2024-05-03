@@ -13,7 +13,7 @@ import (
 
 // Acme acme账号
 type Acme struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	ID         int64  `gorm:"column:id;not null;primary_key"`
 	Email      string `gorm:"column:email;type:varchar(255);index:email,unique;not null"` // 邮箱
 	Kid        string `gorm:"column:kid;type:varchar(255);not null"`                      // kid
 	PrivateKey string `gorm:"column:private_key;type:varchar(255);not null"`              // 私钥

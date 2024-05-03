@@ -2,13 +2,10 @@ package api
 
 import (
 	"context"
-
-	"github.com/codfrm/dns-kit/internal/controller/cdn_ctr"
-
-	"github.com/codfrm/dns-kit/internal/controller/cert_ctr"
-
 	"github.com/codfrm/cago/server/mux"
 	_ "github.com/codfrm/dns-kit/docs"
+	"github.com/codfrm/dns-kit/internal/controller/cdn_ctr"
+	"github.com/codfrm/dns-kit/internal/controller/cert_ctr"
 	"github.com/codfrm/dns-kit/internal/controller/domain_ctr"
 	"github.com/codfrm/dns-kit/internal/controller/provider_ctr"
 	"github.com/codfrm/dns-kit/internal/controller/user_ctr"
@@ -20,6 +17,10 @@ import (
 // @version  1.0
 // @BasePath /api/v1
 func Router(ctx context.Context, root *mux.Router) error {
+	if err := File(root); err != nil {
+		return err
+	}
+
 	r := root.Group("/api/v1")
 
 	userCtr := user_ctr.NewUser()

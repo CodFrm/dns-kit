@@ -10,7 +10,7 @@ import (
 )
 
 type Cdn struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	ID         int64  `gorm:"column:id;not null;primary_key"`
 	ProviderID int64  `gorm:"column:provider_id;type:bigint(20);not null"`      // 供应商id
 	CdnID      string `gorm:"column:cdn_id;type:varchar(128);not null"`         // cdn id
 	Domain     string `gorm:"column:domain;type:varchar(128);not null"`         // 域名
