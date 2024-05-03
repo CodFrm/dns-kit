@@ -132,7 +132,21 @@ definitions:
       total:
         type: integer
     type: object
+  cert.HostingQueryItem:
+    properties:
+      domain:
+        type: string
+      id:
+        type: integer
+      is_managed:
+        type: boolean
+    type: object
   cert.HostingQueryResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/cert.HostingQueryItem'
+        type: array
     type: object
   cert.Item:
     properties:
@@ -144,6 +158,8 @@ definitions:
         type: array
       email:
         type: string
+      expiretime:
+        type: integer
       id:
         type: integer
       status:
@@ -709,7 +725,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 查询托管
+      description: 托管列表
       produces:
       - application/json
       responses:
@@ -720,14 +736,14 @@ paths:
               code:
                 type: integer
               data:
-                $ref: '#/definitions/cert.HostingQueryResponse'
+                $ref: '#/definitions/cert.HostingListResponse'
               msg:
                 type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
-      summary: 查询托管
+      summary: 托管列表
       tags:
       - cert/hosting
     post:
@@ -791,6 +807,31 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 删除托管
+      tags:
+      - cert/hosting
+  /cert/hosting/query:
+    get:
+      consumes:
+      - application/json
+      description: 查询托管
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.HostingQueryResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 查询托管
       tags:
       - cert/hosting
   /domain:

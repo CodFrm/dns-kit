@@ -3,14 +3,15 @@ package provider_svc
 import (
 	"context"
 	"encoding/json"
+	"sync"
+	"time"
+
 	"github.com/codfrm/dns-kit/internal/api/cdn"
 	"github.com/codfrm/dns-kit/internal/api/domain"
 	"github.com/codfrm/dns-kit/internal/repository/cdn_repo"
 	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
 	"github.com/codfrm/dns-kit/internal/service/cdn_svc"
 	"github.com/codfrm/dns-kit/internal/service/domain_svc"
-	"sync"
-	"time"
 
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/iam/audit"

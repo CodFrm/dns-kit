@@ -2,6 +2,7 @@ package cert_hosting_entity
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
 )

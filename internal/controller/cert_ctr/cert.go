@@ -3,9 +3,8 @@ package cert_ctr
 import (
 	"archive/zip"
 	"context"
-	"crypto/x509"
-	"encoding/pem"
-	"errors"
+
+	"github.com/codfrm/dns-kit/internal/pkg/utils"
 	"github.com/gin-gonic/gin"
 
 	api "github.com/codfrm/dns-kit/internal/api/cert"
@@ -36,16 +35,12 @@ func (c *Cert) Download(ctx *gin.Context, req *api.DownloadRequest) error {
 		return err
 	}
 	// .csr .crt, .key, .pem 文件作为一个zip包
-	block, _ := pem.Decode([]byte(resp.Cert))
-	if block == nil {
-		return errors.New("failed to parse certificate PEM")
-	}
-	cert, err := x509.ParseCertificate(block.Bytes)
+	cert, err := utils.DecodeCertPEM(resp.Cert)
 	if err != nil {
 		return err
 	}
 	ctx.Header("Content-Type", "application/zip")
-	name := cert.DNSNames[0]
+	name := cert.Subject.CommonName
 	ctx.Header("Content-Disposition", "attachment; filename="+name+"_cert.zip")
 	w := zip.NewWriter(ctx.Writer)
 	defer w.Close()

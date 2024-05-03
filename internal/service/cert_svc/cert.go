@@ -2,12 +2,13 @@ package cert_svc
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/dns-kit/internal/model/entity/acme_entity"
 	"github.com/codfrm/dns-kit/internal/repository/acme_repo"
 	"github.com/codfrm/dns-kit/pkg/acme"
-	"sync"
-	"time"
 
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/iam/audit"
@@ -66,6 +67,7 @@ func (c *certSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResp
 			Domains:    v.Domains,
 			Status:     v.Status,
 			Createtime: v.Createtime,
+			Expiretime: v.Expiretime,
 		})
 	}
 	return resp, nil
@@ -97,7 +99,7 @@ func (c *certSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Crea
 	if err := cert_repo.Cert().Create(ctx, cert); err != nil {
 		return nil, err
 	}
-	if req.GetIgnoreMsg() {
+	if !req.GetIgnoreMsg() {
 		if err := queue.PublishCertCreate(ctx, &message.CreateCertMessage{ID: cert.ID}); err != nil {
 			return nil, err
 		}

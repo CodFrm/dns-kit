@@ -1,23 +1,24 @@
+app:
+    encrypt_key: G7LzxQ5mmVx3Ua5
 broker:
     type: event_bus
+cache:
+    type: "memory"
 db:
     driver: sqlite
     dsn: data.db
-    prefix:
+    prefix: null
 debug: true
 env: dev
 http:
     address:
         - :8080
 logger:
+    disableConsole: false
     level: info
-    disableConsole: false # 是否禁用控制台输出
     logFile:
         enable: true
         errorFilename: ./runtime/logs/cago.err.log
         filename: ./runtime/logs/cago.log
 source: file
 version: 1.0.0
-
-app:
-    encrypt_key: G7LzxQ5mmVx3Ua5

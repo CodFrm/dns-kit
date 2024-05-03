@@ -12,6 +12,7 @@ type Item struct {
 	Domains    []string               `json:"domains"`
 	Status     cert_entity.CertStatus `json:"status"`
 	Createtime int64                  `json:"createtime"`
+	Expiretime int64                  `json:"expiretime"`
 }
 
 // ListRequest 获取证书列表

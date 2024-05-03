@@ -2,6 +2,7 @@ package cert_hosting_repo
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/logger"
 	"go.uber.org/zap"
 
@@ -42,7 +43,7 @@ func NewCertHosting() CertHostingRepo {
 
 func (u *certHostingRepo) Find(ctx context.Context, id int64) (*cert_hosting_entity.CertHosting, error) {
 	ret := &cert_hosting_entity.CertHosting{}
-	if err := db.Ctx(ctx).Where("id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
+	if err := db.Ctx(ctx).Where("id=? and status!=?", id, consts.DELETE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -66,7 +67,7 @@ func (u *certHostingRepo) Delete(ctx context.Context, id int64) error {
 func (u *certHostingRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*cert_hosting_entity.CertHosting, int64, error) {
 	var list []*cert_hosting_entity.CertHosting
 	var count int64
-	find := db.Ctx(ctx).Model(&cert_hosting_entity.CertHosting{}).Where("status=?", consts.ACTIVE)
+	find := db.Ctx(ctx).Model(&cert_hosting_entity.CertHosting{}).Where("status!=?", consts.DELETE)
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/broker/broker"
 	logger2 "github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/dns-kit/internal/model/entity/cert_hosting_entity"
@@ -15,10 +16,6 @@ import (
 )
 
 type CertHostingHandler struct {
-}
-
-func NewCertHostingHandler() *CertHostingHandler {
-	return &CertHostingHandler{}
 }
 
 func (h *CertHostingHandler) Register(ctx context.Context) error {
@@ -84,6 +81,8 @@ func (h *CertHostingHandler) CreateCertAfter(ctx context.Context, msg *message.C
 			v.Status = cert_hosting_entity.CertHostingStatusActive
 			if err := cert_hosting_repo.CertHosting().Update(ctx, v); err != nil {
 				logger.Error("update hosting status failed", zap.Error(err))
+			} else {
+				logger.Info("deploy success")
 			}
 		}
 	}

@@ -6,11 +6,12 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"github.com/codfrm/dns-kit/internal/service/cert_svc"
 	"net"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/codfrm/dns-kit/internal/service/cert_svc"
 
 	"github.com/codfrm/dns-kit/internal/model/entity/domain_entity"
 
@@ -192,6 +193,13 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 		return err
 	}
 	logger.Info("get certificate success")
+	// 解析证书获取到期时间
+	certInfo, err := utils.DecodeCertPEM(string(certData))
+	if err != nil {
+		logger.Error("parse certificate failed", zap.Error(err))
+		return err
+	}
+	cert.Expiretime = certInfo.NotAfter.Unix()
 	// 保存证书与更新状态
 	cert.Certificate = string(certData)
 	buf := bytes.NewBuffer(nil)

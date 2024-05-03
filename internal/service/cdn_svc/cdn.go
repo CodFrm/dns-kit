@@ -2,6 +2,9 @@ package cdn_svc
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
@@ -16,8 +19,6 @@ import (
 	"github.com/codfrm/dns-kit/pkg/platform"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"sync"
-	"time"
 
 	api "github.com/codfrm/dns-kit/internal/api/cdn"
 )
@@ -175,6 +176,9 @@ func (c *cdnSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.Delet
 		// 删除相关资源
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	_ = audit.Ctx(ctx).Record("delete", zap.Int64("id", cdn.ID), zap.String("name", cdn.Domain))
 	return nil, nil
 }

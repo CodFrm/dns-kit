@@ -271,7 +271,7 @@
         },
         "/cert/hosting": {
             "get": {
-                "description": "查询托管",
+                "description": "托管列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -281,7 +281,7 @@
                 "tags": [
                     "cert/hosting"
                 ],
-                "summary": "查询托管",
+                "summary": "托管列表",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -291,7 +291,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/cert.HostingQueryResponse"
+                                    "$ref": "#/definitions/cert.HostingListResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -338,6 +338,45 @@
                                 },
                                 "data": {
                                     "$ref": "#/definitions/cert.HostingAddResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/cert/hosting/query": {
+            "get": {
+                "description": "查询托管",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cert/hosting"
+                ],
+                "summary": "查询托管",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/cert.HostingQueryResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -1534,8 +1573,30 @@
                 }
             }
         },
+        "cert.HostingQueryItem": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_managed": {
+                    "type": "boolean"
+                }
+            }
+        },
         "cert.HostingQueryResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cert.HostingQueryItem"
+                    }
+                }
+            }
         },
         "cert.Item": {
             "type": "object",
@@ -1551,6 +1612,9 @@
                 },
                 "email": {
                     "type": "string"
+                },
+                "expiretime": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"

@@ -15,13 +15,14 @@ type Handler interface {
 
 func Task(ctx context.Context, config *configs.Config) error {
 	// 定时任务, 每5分钟执行一次, 检查证书
-	_, err := cron.Default().AddFunc("*/5 * * * *", crontab.CheckCert)
+	_, err := cron.Default().AddFunc("*/5 * * * *", crontab.CheckCertHosting)
 	if err != nil {
 		return err
 	}
 
 	handlers := []Handler{
 		&handler.CertHandler{},
+		&handler.CertHostingHandler{},
 	}
 
 	for _, h := range handlers {

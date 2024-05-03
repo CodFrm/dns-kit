@@ -2,6 +2,9 @@ package cert_svc
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/cago/pkg/logger"
@@ -13,8 +16,6 @@ import (
 	"github.com/codfrm/dns-kit/internal/task/queue"
 	"github.com/codfrm/dns-kit/internal/task/queue/message"
 	"go.uber.org/zap"
-	"sync"
-	"time"
 
 	api "github.com/codfrm/dns-kit/internal/api/cert"
 )
@@ -94,7 +95,7 @@ func (h *hostingSvc) HostingAdd(ctx context.Context, req *api.HostingAddRequest)
 	hosting := &cert_hosting_entity.CertHosting{
 		Email:      req.Email,
 		CdnID:      req.CdnID,
-		Status:     cert_hosting_entity.CertHostingStatusActive,
+		Status:     cert_hosting_entity.CertHostingStatusDeploy,
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
 	}
@@ -113,13 +114,21 @@ func (h *hostingSvc) HostingAdd(ctx context.Context, req *api.HostingAddRequest)
 
 // HostingDelete 删除托管
 func (h *hostingSvc) HostingDelete(ctx context.Context, req *api.HostingDeleteRequest) (*api.HostingDeleteResponse, error) {
+	hosting, err := cert_hosting_repo.CertHosting().Find(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := hosting.Check(ctx); err != nil {
+		return nil, err
+	}
+	if err := cert_hosting_repo.CertHosting().Delete(ctx, hosting.ID); err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
 // ReDeploy 重新部署
 func (h *hostingSvc) ReDeploy(ctx context.Context, id int64) error {
-	h.Lock()
-	defer h.Unlock()
 	hosting, err := cert_hosting_repo.CertHosting().Find(ctx, id)
 	if err != nil {
 		return err
@@ -153,7 +162,6 @@ func (h *hostingSvc) ReDeploy(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	hosting.Status = cert_hosting_entity.CertHostingStatusDeploy
 	hosting.CertID = cert.ID
 	hosting.Updatetime = time.Now().Unix()
 	if err = cert_hosting_repo.CertHosting().Update(ctx, hosting); err != nil {

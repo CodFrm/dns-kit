@@ -45,6 +45,7 @@ type Cert struct {
 	Status             CertStatus      `gorm:"column:status;type:tinyint(4);default:0;not null"` // 状态
 	Createtime         int64           `gorm:"column:createtime;type:bigint(20)"`
 	Updatetime         int64           `gorm:"column:updatetime;type:bigint(20)"`
+	Expiretime         int64           `gorm:"column:expiretime;type:bigint(20)"`
 }
 
 func (c *Cert) Check(ctx context.Context) error {
