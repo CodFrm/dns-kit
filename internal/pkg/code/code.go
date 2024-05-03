@@ -36,3 +36,10 @@ const (
 const (
 	CDNNotFound = iota + 50000
 )
+
+// cert hosting
+const (
+	CertHostingNotFound = iota + 60000
+	CertHostingExist
+	CertHostingDeploy
+)

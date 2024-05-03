@@ -44,6 +44,20 @@ func (t *Tencent) GetCDNDetail(ctx context.Context, domain *platform.CDNItem) (*
 }
 
 // SetCDNHttpsCert 设置cdn https证书
-func (t *Tencent) SetCDNHttpsCert(ctx context.Context, domain *platform.CDNItem, cert, key []byte) error {
+func (t *Tencent) SetCDNHttpsCert(ctx context.Context, domain *platform.CDNItem, cert, key string) error {
+	req := cdn.NewUpdateDomainConfigRequest()
+	req.SetContext(ctx)
+	req.Domain = common.StringPtr(domain.Domain)
+	//req.ProjectId = common.Int64Ptr(t.projectId)
+	req.Https = &cdn.Https{
+		CertInfo: &cdn.ServerCert{
+			Certificate: common.StringPtr(cert),
+			PrivateKey:  common.StringPtr(key),
+		},
+	}
+	_, err := t.cdnApi.UpdateDomainConfig(req)
+	if err != nil {
+		return err
+	}
 	return nil
 }

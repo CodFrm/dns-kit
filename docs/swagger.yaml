@@ -26,6 +26,15 @@ definitions:
   cdn.DeleteResponse:
     type: object
   cdn.Item:
+    properties:
+      createtime:
+        type: integer
+      domain:
+        type: string
+      id:
+        type: integer
+      provider_name:
+        type: string
     type: object
   cdn.ListResponse:
     properties:
@@ -68,6 +77,9 @@ definitions:
         type: string
     type: object
   cert.CreateResponse:
+    properties:
+      id:
+        type: integer
     type: object
   cert.DeleteRequest:
     type: object
@@ -81,6 +93,46 @@ definitions:
         type: string
       key:
         type: string
+    type: object
+  cert.HostingAddRequest:
+    properties:
+      cdn_id:
+        type: integer
+      email:
+        type: string
+    type: object
+  cert.HostingAddResponse:
+    type: object
+  cert.HostingDeleteRequest:
+    type: object
+  cert.HostingDeleteResponse:
+    type: object
+  cert.HostingItem:
+    properties:
+      cdn:
+        type: string
+      cdn_id:
+        type: integer
+      cert_id:
+        type: integer
+      createtime:
+        type: integer
+      id:
+        type: integer
+      status:
+        $ref: '#/definitions/cert_hosting_entity.CertHostingStatus'
+    type: object
+  cert.HostingListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/cert.HostingItem'
+          type: object
+        type: array
+      total:
+        type: integer
+    type: object
+  cert.HostingQueryResponse:
     type: object
   cert.Item:
     properties:
@@ -108,6 +160,21 @@ definitions:
         type: integer
     type: object
   cert_entity.CertStatus:
+    type: integer
+  cert_hosting_entity.CertHostingStatus:
+    description: |-
+      CertHostingStatus enum type:
+      - CertHostingStatusActive: 1
+      - CertHostingStatusDelete: 2
+      - CertHostingStatusDeploy: 3
+      - CertHostingStatusDeployFail: 4
+      - CertHostingStatusFail: 5
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
     type: integer
   domain.AddRequest:
     properties:
@@ -638,6 +705,94 @@ paths:
       summary: 下载证书
       tags:
       - cert
+  /cert/hosting:
+    get:
+      consumes:
+      - application/json
+      description: 查询托管
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.HostingQueryResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 查询托管
+      tags:
+      - cert/hosting
+    post:
+      consumes:
+      - application/json
+      description: 添加托管
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/cert.HostingAddRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.HostingAddResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 添加托管
+      tags:
+      - cert/hosting
+  /cert/hosting/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除托管
+      parameters:
+      - in: path
+        name: id
+        required: true
+        type: integer
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/cert.HostingDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/cert.HostingDeleteResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 删除托管
+      tags:
+      - cert/hosting
   /domain:
     get:
       consumes:

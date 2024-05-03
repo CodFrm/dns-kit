@@ -29,4 +29,8 @@ var zhCN = map[int]string{
 	CertStatusApply: "证书申请中",
 
 	CDNNotFound: "CDN不存在",
+
+	CertHostingNotFound: "证书托管不存在",
+	CertHostingExist:    "证书托管已存在",
+	CertHostingDeploy:   "证书托管部署中",
 }

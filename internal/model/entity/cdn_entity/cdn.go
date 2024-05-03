@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
+	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
+	"github.com/codfrm/dns-kit/pkg/platform"
 )
 
 type Cdn struct {
@@ -21,4 +23,15 @@ func (c *Cdn) Check(ctx context.Context) error {
 		return i18n.NewError(ctx, code.CDNNotFound)
 	}
 	return nil
+}
+
+func (c *Cdn) CDNManger(ctx context.Context) (platform.CDNManager, error) {
+	provider, err := provider_repo.Provider().Find(ctx, c.ProviderID)
+	if err != nil {
+		return nil, err
+	}
+	if err := provider.Check(ctx); err != nil {
+		return nil, err
+	}
+	return provider.CDNManger(ctx)
 }

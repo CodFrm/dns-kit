@@ -27,13 +27,24 @@ type ListResponse struct {
 
 // CreateRequest 创建证书
 type CreateRequest struct {
-	mux.Meta `path:"/cert" method:"POST"`
-	Email    string   `json:"email"`
-	Domains  []string `json:"domains"` // 域名
+	mux.Meta  `path:"/cert" method:"POST"`
+	Email     string   `json:"email" binding:"required,email"`
+	Domains   []string `json:"domains"` // 域名
+	ignoreMsg bool     // 忽略消息推送
+}
+
+func (c *CreateRequest) SetIgnoreMsg(ignoreMsg bool) *CreateRequest {
+	c.ignoreMsg = ignoreMsg
+	return c
+}
+
+func (c *CreateRequest) GetIgnoreMsg() bool {
+	return c.ignoreMsg
 }
 
 // CreateResponse 创建证书响应
 type CreateResponse struct {
+	ID int64 `json:"id"`
 }
 
 // DeleteRequest 删除证书

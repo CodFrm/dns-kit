@@ -8,10 +8,13 @@ import {
   Table,
 } from '@arco-design/web-react';
 import { ColumnProps } from '@arco-design/web-react/es/Table';
-import { IconDelete, IconDesktop, IconPlus } from '@arco-design/web-react/icon';
+import {
+  IconDelete,
+  IconPlus,
+} from '@arco-design/web-react/icon';
 import Title from '@arco-design/web-react/es/Typography/title';
 import AddCDN from './add-cdn';
-import { DomainItem, useDomainDeleteMutation } from '@/services/domain.service';
+import { PiCertificateBold } from 'react-icons/pi';
 import {
   CDNItem,
   useCdnDeleteMutation,
@@ -49,7 +52,7 @@ function CDN() {
               type="text"
               style={{ color: 'var(--color-text-2)' }}
               iconOnly
-              icon={<IconDesktop />}
+              icon={<PiCertificateBold />}
               onClick={() => {
                 setEditData(item);
                 setVisible(true);

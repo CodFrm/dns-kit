@@ -18,6 +18,7 @@ type DomainRepo interface {
 
 	FindByDomainID(ctx context.Context, id string) (*domain_entity.Domain, error)
 	FindByDomain(ctx context.Context, domain string) (*domain_entity.Domain, error)
+	FindByProviderId(ctx context.Context, id int64) ([]*domain_entity.Domain, error)
 }
 
 var defaultDomain DomainRepo
@@ -93,4 +94,12 @@ func (d *domainRepo) FindByDomain(ctx context.Context, domain string) (*domain_e
 		return nil, err
 	}
 	return ret, nil
+}
+
+func (d *domainRepo) FindByProviderId(ctx context.Context, id int64) ([]*domain_entity.Domain, error) {
+	var list []*domain_entity.Domain
+	if err := db.Ctx(ctx).Where("provider_id=? and status=?", id, consts.ACTIVE).Find(&list).Error; err != nil {
+		return nil, err
+	}
+	return list, nil
 }

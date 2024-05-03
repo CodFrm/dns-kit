@@ -3,6 +3,12 @@ package provider_svc
 import (
 	"context"
 	"encoding/json"
+	"github.com/codfrm/dns-kit/internal/api/cdn"
+	"github.com/codfrm/dns-kit/internal/api/domain"
+	"github.com/codfrm/dns-kit/internal/repository/cdn_repo"
+	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
+	"github.com/codfrm/dns-kit/internal/service/cdn_svc"
+	"github.com/codfrm/dns-kit/internal/service/domain_svc"
 	"sync"
 	"time"
 
@@ -167,7 +173,25 @@ func (p *providerSvc) DeleteProvider(ctx context.Context, req *api.DeleteProvide
 		if err := provider_repo.Provider().Delete(ctx, req.ID); err != nil {
 			return err
 		}
-		// 删除相关资源
+		// 删除相关的域名和cdn
+		domainList, err := domain_repo.Domain().FindByProviderId(ctx, req.ID)
+		if err != nil {
+			return err
+		}
+		for _, v := range domainList {
+			if _, err := domain_svc.Domain().Delete(ctx, &domain.DeleteRequest{ID: v.ID}); err != nil {
+				return err
+			}
+		}
+		cdnList, err := cdn_repo.Cdn().FindByProviderId(ctx, req.ID)
+		if err != nil {
+			return err
+		}
+		for _, v := range cdnList {
+			if _, err := cdn_svc.Cdn().Delete(ctx, &cdn.DeleteRequest{ID: v.ID}); err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 	if err != nil {

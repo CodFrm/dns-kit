@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/codfrm/dns-kit/internal/repository/acme_repo"
 	"github.com/codfrm/dns-kit/internal/repository/cdn_repo"
+	"github.com/codfrm/dns-kit/internal/repository/cert_hosting_repo"
 	"log"
 
 	"github.com/codfrm/cago/pkg/iam"
@@ -40,6 +41,7 @@ func main() {
 	cert_repo.RegisterCert(cert_repo.NewCert())
 	acme_repo.RegisterAcme(acme_repo.NewAcme())
 	cdn_repo.RegisterCdn(cdn_repo.NewCdn())
+	cert_hosting_repo.RegisterCertHosting(cert_hosting_repo.NewCertHosting())
 
 	err = cago.New(ctx, cfg).
 		Registry(component.Core()).

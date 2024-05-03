@@ -182,7 +182,6 @@ func (d *domainSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.De
 	if err := domain.Check(ctx); err != nil {
 		return nil, err
 	}
-	// 删除相关资源
 	err = db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
 		ctx = db.WithContextDB(ctx, tx)
 		if err := domain_repo.Domain().Delete(ctx, req.ID); err != nil {

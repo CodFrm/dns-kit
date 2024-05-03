@@ -220,7 +220,6 @@ github.com/swaggo/swag v1.16.3 h1:PnCYjPCah8FK4I26l2F/KQ4yz3sILcVUN3cTlBFA9Pg=
 github.com/swaggo/swag v1.16.3/go.mod h1:DImHIuOFXKpMFAQjcC7FG4m3Dg4+QuUgUzJmKjI/gRk=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cdn v1.0.912 h1:zyACb1zdYXNZ/7nWs/oCd1N18D2m5lrIFfk3RSqVuUE=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cdn v1.0.912/go.mod h1:PoM+JxCbQzNvduvBgQ44LC4PMn/Ij9tWlaUTD3cCI+4=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.898 h1:ERwcXqhc94L9cFxtiI0pvt7IJtlHl/p/Jayl3mLw+ms=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.898/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.912 h1:BDqRmR+2vLLHqKWYdgfUl0CDr9+augDBOEOEScLyQ80=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.912/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=

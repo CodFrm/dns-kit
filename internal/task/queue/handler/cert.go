@@ -51,10 +51,18 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 	}
 	// 后续的错误都更新为申请失败
 	defer func() {
+		msg := &message.CreateCertAfterMessage{
+			ID:      msg.ID,
+			Success: true,
+		}
 		if err != nil {
+			msg.Success = false
 			if err := cert_repo.Cert().UpdateStatus(ctx, cert.ID, cert_entity.CertStatusApplyFail); err != nil {
 				logger.Error("update cert failed", zap.Error(err))
 			}
+		}
+		if err := queue.PublishCertCreateAfter(ctx, msg); err != nil {
+			logger.Error("publish cert create after failed", zap.Error(err))
 		}
 	}()
 	acmeInstance, err := cert_svc.Cert().NewACME(ctx, cert.Email)

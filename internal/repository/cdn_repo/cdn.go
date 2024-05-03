@@ -15,6 +15,8 @@ type CdnRepo interface {
 	Create(ctx context.Context, cdn *cdn_entity.Cdn) error
 	Update(ctx context.Context, cdn *cdn_entity.Cdn) error
 	Delete(ctx context.Context, id int64) error
+
+	FindByProviderId(ctx context.Context, id int64) ([]*cdn_entity.Cdn, error)
 }
 
 var defaultCdn CdnRepo
@@ -68,4 +70,12 @@ func (u *cdnRepo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*
 		return nil, 0, err
 	}
 	return list, count, nil
+}
+
+func (u *cdnRepo) FindByProviderId(ctx context.Context, id int64) ([]*cdn_entity.Cdn, error) {
+	var list []*cdn_entity.Cdn
+	if err := db.Ctx(ctx).Where("provider_id=? and status=?", id, consts.ACTIVE).Find(&list).Error; err != nil {
+		return nil, err
+	}
+	return list, nil
 }

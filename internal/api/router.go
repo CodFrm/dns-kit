@@ -105,5 +105,19 @@ func Router(ctx context.Context, root *mux.Router) error {
 		)
 	}
 
+	hosting := cert_ctr.NewHosting()
+	{
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
+			hosting.HostingList,
+			hosting.HostingQuery,
+		)
+
+		r.Group("/", user_svc.User().Middleware(true),
+			user_svc.User().AuditMiddleware("hosting")).Bind(
+			hosting.HostingAdd,
+			hosting.HostingDelete,
+		)
+	}
+
 	return nil
 }

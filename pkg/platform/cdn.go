@@ -14,7 +14,7 @@ type CDNManager interface {
 	// GetCDNDetail 获取cdn详情
 	GetCDNDetail(ctx context.Context, domain *CDNItem) (*CDNItem, error)
 	// SetCDNHttpsCert 设置cdn https证书
-	SetCDNHttpsCert(ctx context.Context, domain *CDNItem, cert, key []byte) error
+	SetCDNHttpsCert(ctx context.Context, domain *CDNItem, cert, key string) error
 	// UserDetails 获取用户信息
 	UserDetails(ctx context.Context) (*User, error)
 }

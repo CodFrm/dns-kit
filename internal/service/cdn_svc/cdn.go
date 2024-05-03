@@ -2,6 +2,7 @@ package cdn_svc
 
 import (
 	"context"
+	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/iam/audit"
@@ -14,6 +15,7 @@ import (
 	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
 	"github.com/codfrm/dns-kit/pkg/platform"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"sync"
 	"time"
 
@@ -165,9 +167,14 @@ func (c *cdnSvc) Delete(ctx context.Context, req *api.DeleteRequest) (*api.Delet
 	if err := cdn.Check(ctx); err != nil {
 		return nil, err
 	}
-	if err := cdn_repo.Cdn().Delete(ctx, cdn.ID); err != nil {
-		return nil, err
-	}
+	err = db.Ctx(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = db.WithContextDB(ctx, tx)
+		if err := cdn_repo.Cdn().Delete(ctx, cdn.ID); err != nil {
+			return err
+		}
+		// 删除相关资源
+		return nil
+	})
 	_ = audit.Ctx(ctx).Record("delete", zap.Int64("id", cdn.ID), zap.String("name", cdn.Domain))
 	return nil, nil
 }

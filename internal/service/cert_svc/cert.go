@@ -97,12 +97,14 @@ func (c *certSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.Crea
 	if err := cert_repo.Cert().Create(ctx, cert); err != nil {
 		return nil, err
 	}
-	if err := queue.PublishCertCreate(ctx, &message.CreateCertMessage{ID: cert.ID}); err != nil {
-		return nil, err
+	if req.GetIgnoreMsg() {
+		if err := queue.PublishCertCreate(ctx, &message.CreateCertMessage{ID: cert.ID}); err != nil {
+			return nil, err
+		}
 	}
 	_ = audit.Ctx(ctx).Record("create", zap.Int64("id", cert.ID),
 		zap.Strings("domains", req.Domains), zap.String("email", cert.Email))
-	return nil, nil
+	return &api.CreateResponse{ID: cert.ID}, nil
 }
 
 func (c *certSvc) NewACME(ctx context.Context, email string) (*acme.Acme, error) {

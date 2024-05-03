@@ -8,6 +8,20 @@ export type CertItem = {
   createtime: number;
 };
 
+export type CertHostingItem = {
+  id: number;
+  cdn_id: number;
+  cdn: string;
+  cert_id: number;
+  status: number;
+};
+
+export type CertHostingQueryItem = {
+  id: number;
+  domain: string;
+  is_managed: boolean;
+};
+
 export const certApiSlice = apiSlice.injectEndpoints({
   endpoints: (build) => ({
     certList: build.query<ListApiResponse<CertItem>, void>({
@@ -36,6 +50,40 @@ export const certApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ['Cert'],
     }),
+    certHostigList: build.query<ListApiResponse<CertHostingItem>, void>({
+      query: () => '/cert/hosting',
+      providesTags: ['CertHosting'],
+    }),
+    certHostingAdd: build.mutation<
+      ApiResponse,
+      { email: string; cdn_id: number }
+    >({
+      query(args) {
+        return {
+          url: '/cert/hosting',
+          method: 'POST',
+          body: args,
+        };
+      },
+      invalidatesTags: ['CertHosting'],
+    }),
+    certHostingDelete: build.mutation<ApiResponse, number>({
+      query(id) {
+        return {
+          url: `/cert/hosting/${id}`,
+          method: 'DELETE',
+        };
+      },
+      invalidatesTags: ['CertHosting'],
+    }),
+    certHostingQuery: build.query<
+      ApiResponse<{ list: CertHostingQueryItem[] }>,
+      void
+    >({
+      query() {
+        return `/cert/hosting/query`;
+      },
+    }),
   }),
 });
 
@@ -43,4 +91,8 @@ export const {
   useCertListQuery,
   useCertCreateMutation,
   useCertDeleteMutation,
+  useCertHostigListQuery,
+  useCertHostingAddMutation,
+  useCertHostingDeleteMutation,
+  useCertHostingQueryQuery,
 } = certApiSlice;
