@@ -1,18 +1,18 @@
 import { Input, Space, Tag } from '@arco-design/web-react';
 import FormItem from '@arco-design/web-react/es/Form/form-item';
 
-const Tencent: React.FC<{ update: boolean }> = ({ update }) => {
+const Aliyun: React.FC<{ update: boolean }> = ({ update }) => {
   return (
     <>
       <FormItem
-        field="secret.secret_id"
+        field="secret.access_key_id"
         label="密钥ID"
         rules={update ? [] : [{ required: true }]}
       >
         <Input />
       </FormItem>
       <FormItem
-        field="secret.secret_key"
+        field="secret.access_key_secret"
         label="密钥"
         rules={update ? [] : [{ required: true }]}
       >
@@ -22,11 +22,11 @@ const Tencent: React.FC<{ update: boolean }> = ({ update }) => {
   );
 };
 
-export default Tencent;
+export default Aliyun;
 
 export const PlatformSupportTag = () => (
   <Space>
-    <Tag color="green">CDN</Tag>
+    {/* <Tag color="green">CDN</Tag> */}
     <Tag color="arcoblue">DNS</Tag>
   </Space>
 );

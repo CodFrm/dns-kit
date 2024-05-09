@@ -1,4 +1,4 @@
-import { Input } from '@arco-design/web-react';
+import { Input, Space, Tag } from '@arco-design/web-react';
 import FormItem from '@arco-design/web-react/es/Form/form-item';
 
 const Cloudflare: React.FC<{ update: boolean }> = ({ update }) => {
@@ -16,3 +16,9 @@ const Cloudflare: React.FC<{ update: boolean }> = ({ update }) => {
 };
 
 export default Cloudflare;
+
+export const PlatformSupportTag = () => (
+  <Space>
+   <Tag color="arcoblue">DNS</Tag>
+  </Space>
+);

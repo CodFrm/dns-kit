@@ -77,7 +77,11 @@ func (d *domainSvc) Query(ctx context.Context, req *api.QueryRequest) (*api.Quer
 	provides, _, err := provider_repo.Provider().FindPage(ctx, httputils.PageRequest{
 		Size: 100,
 	}, func(filter *provider_repo.FindPageFilters) {
-		filter.Platform = []provider_entity.Platform{provider_entity.PlatformTencent, provider_entity.PlatformCloudflare}
+		filter.Platform = []provider_entity.Platform{
+			provider_entity.PlatformTencent,
+			provider_entity.PlatformCloudflare,
+			provider_entity.PlatformAliyun,
+		}
 	})
 	if err != nil {
 		return nil, err

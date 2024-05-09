@@ -8,8 +8,8 @@ db:
     driver: sqlite
     dsn: data.db
     prefix: null
-debug: true
-env: dev
+debug: false
+env: prod
 http:
     address:
         - :8080

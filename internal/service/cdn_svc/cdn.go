@@ -47,7 +47,10 @@ func Cdn() CdnSvc {
 // Query 查询cdn
 func (c *cdnSvc) Query(ctx context.Context, req *api.QueryRequest) (*api.QueryResponse, error) {
 	provider, _, err := provider_repo.Provider().FindPage(ctx, httputils.PageRequest{}, func(filter *provider_repo.FindPageFilters) {
-		filter.Platform = []provider_entity.Platform{provider_entity.PlatformTencent}
+		filter.Platform = []provider_entity.Platform{
+			provider_entity.PlatformTencent,
+			provider_entity.PlatformQiniu,
+		}
 	})
 	if err != nil {
 		return nil, err

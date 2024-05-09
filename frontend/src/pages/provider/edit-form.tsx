@@ -15,12 +15,32 @@ import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { platformSupportTag } from '.';
 import Tencent from './platform/tencent';
 import Cloudflare from './platform/cloudflare';
+import Qiniu from './platform/qiniu';
+import Aliyun from './platform/aliyun';
 
-const platformForm: { [key: string]: FunctionComponent<{ update: boolean }> } =
-  {
-    tencent: Tencent,
-    cloudflare: Cloudflare,
+export const platformForm: {
+  [key: string]: {
+    name: string;
+    component: FunctionComponent<{ update: boolean }>;
   };
+} = {
+  tencent: {
+    name: '腾讯云',
+    component: Tencent,
+  },
+  aliyun: {
+    name: '阿里云',
+    component: Aliyun,
+  },
+  cloudflare: {
+    name: 'Cloudflare',
+    component: Cloudflare,
+  },
+  qiniu: {
+    name: '七牛云',
+    component: Qiniu,
+  },
+};
 
 const EditForm: React.FC<{
   visible: boolean;
@@ -43,12 +63,13 @@ const EditForm: React.FC<{
     }
   }, [props.data]);
 
-  const PlaformFormComponent = platformForm[platform];
+  const PlaformForm = platformForm[platform];
 
   return (
     <Modal
       title={props.data ? '编辑' + props.data.name : '新增厂商'}
       visible={props.visible}
+      style={{ width: 600 }}
       confirmLoading={isLoading}
       onOk={async () => {
         form.validate().then((res) => {
@@ -91,13 +112,16 @@ const EditForm: React.FC<{
               setPlatform(val);
             }}
           >
-            <Select.Option value="tencent">腾讯云</Select.Option>
-            <Select.Option value="cloudflare">Cloudflare</Select.Option>
+            {Object.keys(platformForm).map((key) => (
+              <Select.Option value={key} key={key}>
+                {platformForm[key].name}
+              </Select.Option>
+            ))}
           </Select>
         </FormItem>
         <FormItem label="支持">{platformSupportTag(platform)}</FormItem>
-        {(PlaformFormComponent && (
-          <PlaformFormComponent update={props.data?.id ? true : false} />
+        {(PlaformForm && (
+          <PlaformForm.component update={props.data?.id ? true : false} />
         )) || <></>}
       </Form>
     </Modal>

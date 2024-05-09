@@ -4,27 +4,27 @@ import (
 	"context"
 	"log"
 
-	"github.com/codfrm/dns-kit/internal/repository/acme_repo"
-	"github.com/codfrm/dns-kit/internal/repository/cdn_repo"
-	"github.com/codfrm/dns-kit/internal/repository/cert_hosting_repo"
-
+	"github.com/codfrm/cago"
+	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/database/cache"
+	"github.com/codfrm/cago/database/db"
+	_ "github.com/codfrm/cago/database/db/sqlite"
+	"github.com/codfrm/cago/pkg/broker"
 	"github.com/codfrm/cago/pkg/iam"
 	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/cago/pkg/iam/audit/audit_db"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/server/cron"
-	"github.com/codfrm/dns-kit/internal/repository/cert_repo"
-	"github.com/codfrm/dns-kit/internal/task"
-
-	"github.com/codfrm/cago"
-	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/database/db"
-	_ "github.com/codfrm/cago/database/db/sqlite"
-	"github.com/codfrm/cago/pkg/component"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/codfrm/dns-kit/internal/api"
+	"github.com/codfrm/dns-kit/internal/repository/acme_repo"
+	"github.com/codfrm/dns-kit/internal/repository/cdn_repo"
+	"github.com/codfrm/dns-kit/internal/repository/cert_hosting_repo"
+	"github.com/codfrm/dns-kit/internal/repository/cert_repo"
 	"github.com/codfrm/dns-kit/internal/repository/domain_repo"
 	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
 	"github.com/codfrm/dns-kit/internal/repository/user_repo"
+	"github.com/codfrm/dns-kit/internal/task"
 	"github.com/codfrm/dns-kit/migrations"
 )
 
@@ -45,10 +45,10 @@ func main() {
 	cert_hosting_repo.RegisterCertHosting(cert_hosting_repo.NewCertHosting())
 
 	err = cago.New(ctx, cfg).
-		Registry(component.Core()).
-		Registry(component.Database()).
-		Registry(component.Broker()).
-		Registry(component.Cache()).
+		Registry(cago.FuncComponent(logger.Logger)).
+		Registry(db.Database()).
+		Registry(cago.FuncComponent(broker.Broker)).
+		Registry(cache.Cache()).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
 		})).

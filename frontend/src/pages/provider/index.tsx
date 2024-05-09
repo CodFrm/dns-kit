@@ -11,28 +11,27 @@ import {
 import { ColumnProps } from '@arco-design/web-react/es/Table';
 import { IconDelete, IconEdit, IconPlus } from '@arco-design/web-react/icon';
 import Title from '@arco-design/web-react/es/Typography/title';
-import EditForm from '@/pages/provider/edit-form';
+import EditForm, { platformForm } from '@/pages/provider/edit-form';
 import {
   ProviderItem,
   useProviderDeleteMutation,
   useProviderListQuery,
 } from '@/services/provider.service';
+import { PlatformSupportTag as TencentPlatformSupportTag } from './platform/tencent';
+import { PlatformSupportTag as CloudflarePlatformSupportTag } from './platform/cloudflare';
+import { PlatformSupportTag as QiniuPlatformSupportTag } from './platform/qiniu';
+import { PlatformSupportTag as AliyunPlatformSupportTag } from './platform/aliyun';
 
 export function platformSupportTag(platform: string) {
   switch (platform) {
     case 'tencent':
-      return (
-        <Space>
-          <Tag color="green">CDN</Tag>
-          <Tag color="arcoblue">DNS</Tag>
-        </Space>
-      );
+      return <TencentPlatformSupportTag />;
     case 'cloudflare':
-      return (
-        <Space>
-          <Tag color="arcoblue">DNS</Tag>
-        </Space>
-      );
+      return <CloudflarePlatformSupportTag />;
+    case 'qiniu':
+      return <QiniuPlatformSupportTag />;
+    case 'aliyun':
+      return <AliyunPlatformSupportTag />;
   }
   return <></>;
 }
@@ -58,7 +57,7 @@ function Provider() {
       title: '平台',
       dataIndex: 'platform',
       render(col) {
-        return { tencent: '腾讯云', cloudflare: 'Cloudflare' }[col];
+        return platformForm[col].name;
       },
     },
     {

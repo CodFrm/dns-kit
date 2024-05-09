@@ -3,6 +3,8 @@ package provider_svc
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"github.com/codfrm/dns-kit/pkg/platform"
 	"sync"
 	"time"
 
@@ -87,9 +89,22 @@ func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProvide
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
 	}
-	manager, err := provider2.DomainManager(ctx)
+	var manager interface {
+		UserDetails(ctx context.Context) (*platform.User, error)
+	}
+	manager, err = provider2.DomainManager(ctx)
 	if err != nil {
-		return nil, err
+		var er *httputils.Error
+		if !errors.As(err, &er) {
+			return nil, err
+		}
+		if er.Code != code.ProviderNotSupport {
+			return nil, err
+		}
+		manager, err = provider2.CDNManger(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 	user, err := manager.UserDetails(ctx)
 	if err != nil {

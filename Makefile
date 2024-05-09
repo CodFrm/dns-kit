@@ -57,5 +57,10 @@ endif
 
 build:
 	# 构建前端
+	cd frontend && yarn && yarn build
+	# 构建后端
+	go mod tidy
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(APP_NAME)_v$(APP_VERSION)$(SUFFIX) ./cmd/app
 
+docker:
+	docker build -t $(APP_NAME):$(APP_VERSION) .

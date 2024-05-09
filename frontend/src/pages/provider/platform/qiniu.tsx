@@ -1,19 +1,19 @@
 import { Input, Space, Tag } from '@arco-design/web-react';
 import FormItem from '@arco-design/web-react/es/Form/form-item';
 
-const Tencent: React.FC<{ update: boolean }> = ({ update }) => {
+const Qiniu: React.FC<{ update: boolean }> = ({ update }) => {
   return (
     <>
       <FormItem
-        field="secret.secret_id"
-        label="密钥ID"
+        field="secret.access_key"
+        label="AccessKey"
         rules={update ? [] : [{ required: true }]}
       >
         <Input />
       </FormItem>
       <FormItem
         field="secret.secret_key"
-        label="密钥"
+        label="SecretKey"
         rules={update ? [] : [{ required: true }]}
       >
         <Input />
@@ -22,11 +22,10 @@ const Tencent: React.FC<{ update: boolean }> = ({ update }) => {
   );
 };
 
-export default Tencent;
+export default Qiniu;
 
 export const PlatformSupportTag = () => (
   <Space>
     <Tag color="green">CDN</Tag>
-    <Tag color="arcoblue">DNS</Tag>
   </Space>
 );

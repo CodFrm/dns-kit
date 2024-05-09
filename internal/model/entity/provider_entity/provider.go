@@ -3,6 +3,8 @@ package provider_entity
 import (
 	"context"
 	"encoding/json"
+	"github.com/codfrm/dns-kit/pkg/platform/provider/aliyun"
+	"github.com/codfrm/dns-kit/pkg/platform/provider/qiniu"
 
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/dns-kit/internal/pkg/code"
@@ -16,6 +18,8 @@ type Platform string
 const (
 	PlatformCloudflare Platform = "cloudflare"
 	PlatformTencent    Platform = "tencent"
+	PlatformQiniu      Platform = "qiniu"
+	PlatformAliyun     Platform = "aliyun"
 )
 
 type Provider struct {
@@ -59,6 +63,8 @@ func (p *Provider) DomainManager(ctx context.Context) (platform.DomainManager, e
 		manager, err = cloudflare.NewCloudflare(p.SecretMap()["token"])
 	case PlatformTencent:
 		manager, err = tencent.NewTencent(p.SecretMap()["secret_id"], p.SecretMap()["secret_key"])
+	case PlatformAliyun:
+		manager, err = aliyun.NewAliyun(p.SecretMap()["access_key_id"], p.SecretMap()["access_key_secret"])
 	default:
 		return nil, i18n.NewError(ctx, code.ProviderNotSupport)
 	}
@@ -76,6 +82,8 @@ func (p *Provider) CDNManger(ctx context.Context) (platform.CDNManager, error) {
 	switch p.Platform {
 	case PlatformTencent:
 		manager, err = tencent.NewTencent(p.SecretMap()["secret_id"], p.SecretMap()["secret_key"])
+	case PlatformQiniu:
+		manager, err = qiniu.NewQiniu(p.SecretMap()["access_key"], p.SecretMap()["secret_key"])
 	default:
 		return nil, i18n.NewError(ctx, code.ProviderNotSupport)
 	}
