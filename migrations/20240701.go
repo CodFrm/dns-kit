@@ -1,22 +1,16 @@
 package migrations
 
 import (
-	"github.com/codfrm/dns-kit/internal/model/entity/acme_entity"
-	"github.com/codfrm/dns-kit/internal/model/entity/cdn_entity"
-	"github.com/codfrm/dns-kit/internal/model/entity/cert_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/cert_hosting_entity"
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
 )
 
-func T20240502() *gormigrate.Migration {
+func T20240701() *gormigrate.Migration {
 	return &gormigrate.Migration{
-		ID: "20240502",
+		ID: "20240701",
 		Migrate: func(tx *gorm.DB) error {
 			entities := []any{
-				&cert_entity.Cert{},
-				&acme_entity.Acme{},
-				&cdn_entity.Cdn{},
 				&cert_hosting_entity.CertHosting{},
 			}
 			for _, entity := range entities {

@@ -30,7 +30,8 @@ var zhCN = map[int]string{
 
 	CDNNotFound: "CDN不存在",
 
-	CertHostingNotFound: "证书托管不存在",
-	CertHostingExist:    "证书托管已存在",
-	CertHostingDeploy:   "证书托管部署中",
+	CertHostingNotFound:  "证书托管不存在",
+	CertHostingExist:     "证书托管已存在",
+	CertHostingDeploy:    "证书托管部署中",
+	CertHostingTypeError: "证书托管类型错误",
 }

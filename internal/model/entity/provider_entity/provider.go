@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/codfrm/dns-kit/pkg/platform/provider/aliyun"
+	"github.com/codfrm/dns-kit/pkg/platform/provider/kubernetes"
 	"github.com/codfrm/dns-kit/pkg/platform/provider/qiniu"
 
 	"github.com/codfrm/cago/pkg/i18n"
@@ -20,6 +21,7 @@ const (
 	PlatformTencent    Platform = "tencent"
 	PlatformQiniu      Platform = "qiniu"
 	PlatformAliyun     Platform = "aliyun"
+	PlatformKubernetes Platform = "kubernetes"
 )
 
 type Provider struct {
@@ -84,6 +86,8 @@ func (p *Provider) CDNManger(ctx context.Context) (platform.CDNManager, error) {
 		manager, err = tencent.NewTencent(p.SecretMap()["secret_id"], p.SecretMap()["secret_key"])
 	case PlatformQiniu:
 		manager, err = qiniu.NewQiniu(p.SecretMap()["access_key"], p.SecretMap()["secret_key"])
+	case PlatformKubernetes:
+		manager, err = kubernetes.NewKubernetes(p.SecretMap()["kube_config"])
 	default:
 		return nil, i18n.NewError(ctx, code.ProviderNotSupport)
 	}

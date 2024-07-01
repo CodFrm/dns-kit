@@ -2,6 +2,7 @@ package cert_svc
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -76,25 +77,45 @@ func (h *hostingSvc) HostingList(ctx context.Context, req *api.HostingListReques
 func (h *hostingSvc) HostingAdd(ctx context.Context, req *api.HostingAddRequest) (*api.HostingAddResponse, error) {
 	h.Lock()
 	defer h.Unlock()
-	cdn, err := cdn_repo.Cdn().Find(ctx, req.CdnID)
-	if err != nil {
-		return nil, err
-	}
-	if err := cdn.Check(ctx); err != nil {
-		return nil, err
-	}
-	// 判断是否已托管
-	exists, err := cert_hosting_repo.CertHosting().FindByCDN(ctx, cdn.ID)
-	if err != nil {
-		return nil, err
-	}
-	if len(exists) > 0 {
-		return nil, i18n.NewError(ctx, code.CertHostingExist)
+	if req.Type == cert_hosting_entity.CertHostingTypeCDN {
+		cdn, err := cdn_repo.Cdn().Find(ctx, req.CdnID)
+		if err != nil {
+			return nil, err
+		}
+		if err := cdn.Check(ctx); err != nil {
+			return nil, err
+		}
+		// 判断是否已托管
+		exists, err := cert_hosting_repo.CertHosting().FindByCDN(ctx, cdn.ID)
+		if err != nil {
+			return nil, err
+		}
+		if len(exists) > 0 {
+			return nil, i18n.NewError(ctx, code.CertHostingExist)
+		}
+	} else if req.Type == cert_hosting_entity.CertHostingTypeProvider {
+		// 判断厂商是否存在
+		provider, err := cert_hosting_repo.CertHosting().Find(ctx, req.ProviderID)
+		if err != nil {
+			return nil, err
+		}
+		if err := provider.Check(ctx); err != nil {
+			return nil, err
+		}
+		// 检查域名是否正确
+		if err := Cert().CheckDomains(ctx, req.Domains); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, i18n.NewError(ctx, code.CertHostingTypeError)
 	}
 	// 添加入托管
 	hosting := &cert_hosting_entity.CertHosting{
 		Email:      req.Email,
+		Type:       req.Type,
 		CdnID:      req.CdnID,
+		ProviderID: req.ProviderID,
+		Domains:    strings.Join(req.Domains, ","),
 		Status:     cert_hosting_entity.CertHostingStatusDeploy,
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
@@ -105,7 +126,7 @@ func (h *hostingSvc) HostingAdd(ctx context.Context, req *api.HostingAddRequest)
 	_ = audit.Ctx(ctx).Record("create", zap.Int64("id", hosting.ID),
 		zap.Int64("cdn_id", hosting.CdnID), zap.String("email", hosting.Email))
 	// 申请部署
-	err = Hosting().ReDeploy(ctx, hosting.ID)
+	err := Hosting().ReDeploy(ctx, hosting.ID)
 	if err != nil {
 		logger.Ctx(ctx).Warn("redeploy failed", zap.Error(err))
 	}

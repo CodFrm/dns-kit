@@ -21,6 +21,7 @@ import { PlatformSupportTag as TencentPlatformSupportTag } from './platform/tenc
 import { PlatformSupportTag as CloudflarePlatformSupportTag } from './platform/cloudflare';
 import { PlatformSupportTag as QiniuPlatformSupportTag } from './platform/qiniu';
 import { PlatformSupportTag as AliyunPlatformSupportTag } from './platform/aliyun';
+import { PlatformSupportTag as KubernetesPlatformSupportTag } from './platform/kubernetes';
 
 export function platformSupportTag(platform: string) {
   switch (platform) {
@@ -32,6 +33,8 @@ export function platformSupportTag(platform: string) {
       return <QiniuPlatformSupportTag />;
     case 'aliyun':
       return <AliyunPlatformSupportTag />;
+    case 'kubernetes':
+      return <KubernetesPlatformSupportTag />;
   }
   return <></>;
 }

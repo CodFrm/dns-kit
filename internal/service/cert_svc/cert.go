@@ -36,6 +36,8 @@ type CertSvc interface {
 	Download(ctx context.Context, req *api.DownloadRequest) (*api.DownloadResponse, error)
 	// Delete 删除证书
 	Delete(ctx context.Context, req *api.DeleteRequest) (*api.DeleteResponse, error)
+	// CheckDomains 检查域名
+	CheckDomains(ctx context.Context, domains []string) error
 }
 
 type certSvc struct {
@@ -73,22 +75,29 @@ func (c *certSvc) List(ctx context.Context, req *api.ListRequest) (*api.ListResp
 	return resp, nil
 }
 
-// Create 创建证书
-func (c *certSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
+func (c *certSvc) CheckDomains(ctx context.Context, domains []string) error {
 	// 获取顶级域名
-	domainMap, err := utils.GetTLDMap(req.Domains)
+	domainMap, err := utils.GetTLDMap(domains)
 	if err != nil {
-		return nil, i18n.NewError(ctx, code.InvalidDomain)
+		return i18n.NewError(ctx, code.InvalidDomain)
 	}
 	// 搜索域名是否在纳管中
 	for domain := range domainMap {
 		entity, err := domain_repo.Domain().FindByDomain(ctx, domain)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if err := entity.Check(ctx); err != nil {
-			return nil, err
+			return err
 		}
+	}
+	return nil
+}
+
+// Create 创建证书
+func (c *certSvc) Create(ctx context.Context, req *api.CreateRequest) (*api.CreateResponse, error) {
+	if err := c.CheckDomains(ctx, req.Domains); err != nil {
+		return nil, err
 	}
 	cert := &cert_entity.Cert{
 		Email:      req.Email,

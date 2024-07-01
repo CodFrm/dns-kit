@@ -3,12 +3,16 @@ import {
   useCertHostingAddMutation,
   useCertHostingQueryQuery,
 } from '@/services/cert.service';
+import { useProviderListQuery } from '@/services/provider.service';
 import {
+  Checkbox,
   Form,
   FormInstance,
   Input,
+  InputTag,
   Message,
   Modal,
+  Radio,
   Select,
 } from '@arco-design/web-react';
 import FormItem from '@arco-design/web-react/es/Form/form-item';
@@ -22,6 +26,9 @@ const AddForm: React.FC<{
   const [form] = Form.useForm();
   const [add, { isLoading }] = useCertHostingAddMutation();
   const { data: cdnData, isLoading: cdnIsLoading } = useCertHostingQueryQuery();
+  const { data: providerData, isLoading: providerIsLoading } =
+    useProviderListQuery();
+  const [type, setType] = useState<string>('cdn');
   useEffect(() => {
     if (props.visible) {
       form.resetFields();
@@ -53,19 +60,59 @@ const AddForm: React.FC<{
         <FormItem field="email" label="邮箱" rules={[{ required: true }]}>
           <Input placeholder="请输入邮箱" />
         </FormItem>
-        <FormItem field="cdn_id" label="CDN" rules={[{ required: true }]}>
-          <Select loading={cdnIsLoading}>
-            {cdnData?.data?.list?.map((item) => (
-              <Select.Option
-                key={item.id}
-                value={item.id}
-                disabled={item.is_managed}
-              >
-                {item.domain}
-              </Select.Option>
-            ))}
-          </Select>
+        <FormItem
+          field="type"
+          label="类型"
+          rules={[{ required: true }]}
+          defaultValue={type}
+        >
+          <Radio.Group
+            value={type}
+            type="button"
+            defaultValue={type}
+            onChange={(val) => {
+              setType(val);
+            }}
+          >
+            <Radio value="cdn">CDN</Radio>
+            <Radio value="provider">厂商</Radio>
+          </Radio.Group>
         </FormItem>
+        {type == 'cdn' && (
+          <FormItem field="cdn_id" label="CDN" rules={[{ required: true }]}>
+            <Select loading={cdnIsLoading}>
+              {cdnData?.data?.list?.map((item) => (
+                <Select.Option
+                  key={item.id}
+                  value={item.id}
+                  disabled={item.is_managed}
+                >
+                  {item.domain}
+                </Select.Option>
+              ))}
+            </Select>
+          </FormItem>
+        )}
+        {type == 'provider' && (
+          <>
+            <FormItem
+              field="provider_id"
+              label="厂商"
+              rules={[{ required: true }]}
+            >
+              <Select loading={providerIsLoading}>
+                {providerData?.data?.list?.map((item) => (
+                  <Select.Option key={item.id} value={item.id}>
+                    {item.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </FormItem>
+            <FormItem field="domains" label="域名" rules={[{ required: true }]}>
+              <InputTag placeholder="请输入要申请的域名，按下回车添加" />
+            </FormItem>
+          </>
+        )}
       </Form>
     </Modal>
   );

@@ -17,11 +17,22 @@ const (
 	CertHostingStatusFail       // 托管失败(不可重试)
 )
 
+// CertHostingType 证书托管类型 1:CDN 2:供应商
+type CertHostingType int
+
+const (
+	CertHostingTypeCDN = iota + 1
+	CertHostingTypeProvider
+)
+
 // CertHosting 证书托管
 type CertHosting struct {
 	ID         int64             `gorm:"column:id;not null;primary_key"`
 	Email      string            `gorm:"column:email;type:varchar(255);not null"`          // 邮箱
-	CdnID      int64             `gorm:"column:cdn_id;type:bigint(20);not null"`           // CDN ID
+	Type       CertHostingType   `gorm:"column:type;type:tinyint(4);default:1;not null"`   // 类型
+	CdnID      int64             `gorm:"column:cdn_id;type:bigint(20);"`                   // CDN ID，当类型为 CDN 时，该字段不能为空
+	ProviderID int64             `gorm:"column:provider_id;type:bigint(20);"`              // 供应商 ID，当类型为供应商时，该字段不能为空
+	Domains    string            `gorm:"column:domains;type:varchar(255);"`                // 域名，当类型为供应商时，该字段不能为空
 	CertID     int64             `gorm:"column:cert_id;type:bigint(20);default:0"`         // 关联的证书 ID
 	Status     CertHostingStatus `gorm:"column:status;type:tinyint(4);default:0;not null"` // 状态
 	Createtime int64             `gorm:"column:createtime;type:bigint(20)"`

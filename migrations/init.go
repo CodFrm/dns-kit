@@ -9,7 +9,8 @@ import (
 func RunMigrations(db *gorm.DB) error {
 	return run(db,
 		T20240326,
-		T20240427,
+		T20240502,
+		T20240701,
 	)
 }
 

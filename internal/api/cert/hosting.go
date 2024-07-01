@@ -44,9 +44,12 @@ type HostingQueryResponse struct {
 
 // HostingAddRequest 添加托管
 type HostingAddRequest struct {
-	mux.Meta `path:"/cert/hosting" method:"POST"`
-	Email    string `json:"email" binding:"required,email"`
-	CdnID    int64  `json:"cdn_id"`
+	mux.Meta   `path:"/cert/hosting" method:"POST"`
+	Email      string                              `json:"email" binding:"required,email"`
+	Type       cert_hosting_entity.CertHostingType `json:"type" binding:"required"`
+	CdnID      int64                               `json:"cdn_id" binding:"required_if=Type 1"`
+	ProviderID int64                               `json:"provider_id" binding:"required_if=Type 2"`
+	Domains    []string                            `json:"domains" binding:"required_if=Type 2"`
 }
 
 // HostingAddResponse 添加托管

@@ -42,4 +42,5 @@ const (
 	CertHostingNotFound = iota + 60000
 	CertHostingExist
 	CertHostingDeploy
+	CertHostingTypeError
 )

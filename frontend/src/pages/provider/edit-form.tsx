@@ -17,6 +17,7 @@ import Tencent from './platform/tencent';
 import Cloudflare from './platform/cloudflare';
 import Qiniu from './platform/qiniu';
 import Aliyun from './platform/aliyun';
+import Kubernetes from './platform/kubernetes';
 
 export const platformForm: {
   [key: string]: {
@@ -39,6 +40,10 @@ export const platformForm: {
   qiniu: {
     name: '七牛云',
     component: Qiniu,
+  },
+  kubernetes: {
+    name: 'Kubernetes',
+    component: Kubernetes,
   },
 };
 

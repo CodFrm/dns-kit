@@ -72,6 +72,10 @@ func (p *providerSvc) ListProvider(ctx context.Context, req *api.ListProviderReq
 	return ret, nil
 }
 
+type manager interface {
+	UserDetails(ctx context.Context) (*platform.User, error)
+}
+
 // CreateProvider 创建供应商
 func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProviderRequest) (*api.CreateProviderResponse, error) {
 	p.Lock()
@@ -89,9 +93,7 @@ func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProvide
 		Createtime: time.Now().Unix(),
 		Updatetime: time.Now().Unix(),
 	}
-	var manager interface {
-		UserDetails(ctx context.Context) (*platform.User, error)
-	}
+	var manager manager
 	manager, err = provider2.DomainManager(ctx)
 	if err != nil {
 		var er *httputils.Error
@@ -140,9 +142,20 @@ func (p *providerSvc) UpdateProvider(ctx context.Context, req *api.UpdateProvide
 	}
 	provider.Name = req.Name
 	if len(req.Secret) > 0 {
-		manager, err := provider.DomainManager(ctx)
+		var manager manager
+		manager, err = provider.DomainManager(ctx)
 		if err != nil {
-			return nil, err
+			var er *httputils.Error
+			if !errors.As(err, &er) {
+				return nil, err
+			}
+			if er.Code != code.ProviderNotSupport {
+				return nil, err
+			}
+			manager, err = provider.CDNManger(ctx)
+			if err != nil {
+				return nil, err
+			}
 		}
 		user, err := manager.UserDetails(ctx)
 		if err != nil {
