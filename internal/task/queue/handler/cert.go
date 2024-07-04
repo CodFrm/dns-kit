@@ -7,13 +7,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"net"
+	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/codfrm/dns-kit/internal/service/cert_svc"
-
-	"github.com/codfrm/dns-kit/internal/model/entity/domain_entity"
 
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/dns-kit/internal/model/entity/cert_entity"
@@ -79,57 +78,63 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 	logger.Info("get challenges success", zap.Any("challenges", challenges))
 	// 设置dns记录
 	wg := sync.WaitGroup{}
+	firstChallenge := challenges[0]
+	logger = logger.With(zap.String("domain", firstChallenge.Domain))
+	// 获取tld
+	tld, err := utils.GetTLD(firstChallenge.Domain)
+	if err != nil {
+		logger.Error("get tld failed", zap.Error(err))
+		return err
+	}
+	// 设置dns解析
+	domain, err := domain_repo.Domain().FindByDomain(ctx, tld)
+	if err != nil {
+		logger.Error("find domain failed", zap.Error(err))
+		return err
+	}
+	if err = domain.Check(ctx); err != nil {
+		logger.Error("domain check failed", zap.Error(err))
+		return err
+	}
+	manager, err := domain.DnsManager(ctx)
+	if err != nil {
+		logger.Error("domain factory failed", zap.Error(err))
+		return err
+	}
+	recordList, err := manager.GetRecordList(ctx)
+	if err != nil {
+		logger.Error("get record list failed", zap.Error(err))
+		return err
+	}
+	addRecord := make([]*platform.Record, 0)
 	for _, v := range challenges {
-		logger := logger.With(zap.String("domain", v.Domain))
-		// 获取tld
-		var tld string
-		tld, err = utils.GetTLD(v.Domain)
-		if err != nil {
-			logger.Error("get tld failed", zap.Error(err))
-			return err
-		}
-		// 设置dns解析
-		var domain *domain_entity.Domain
-		domain, err = domain_repo.Domain().FindByDomain(ctx, tld)
-		if err != nil {
-			logger.Error("find domain failed", zap.Error(err))
-			return err
-		}
-		if err = domain.Check(ctx); err != nil {
-			logger.Error("domain check failed", zap.Error(err))
-			return err
-		}
-		var manager platform.DNSManager
-		manager, err = domain.DnsManager(ctx)
-		if err != nil {
-			logger.Error("domain factory failed", zap.Error(err))
-			return err
-		}
-		record := &platform.Record{
-			Type:  "TXT",
-			Value: v.Record,
-		}
 		// 获取记录名
+		var recordName string
 		if v.Domain == tld {
-			record.Name = "_acme-challenge"
+			recordName = "_acme-challenge"
 		} else {
-			record.Name = "_acme-challenge." + strings.TrimSuffix(v.Domain, "."+tld)
+			recordName = "_acme-challenge." + strings.TrimSuffix(v.Domain, "."+tld)
 		}
-		// 删除老的记录
-		var recordList []*platform.Record
-		recordList, err = manager.GetRecordList(ctx)
-		if err != nil {
-			logger.Error("get record list failed", zap.Error(err))
-			return err
-		}
-		for _, v := range recordList {
-			if v.Name == record.Name {
-				if err = manager.DelRecord(ctx, v.ID); err != nil {
-					logger.Error("del record failed", zap.String("value", v.Value), zap.Error(err))
-					return err
-				}
+		addRecord = append(addRecord, &platform.Record{
+			Type:  "TXT",
+			Name:  recordName,
+			Value: v.Record,
+		})
+	}
+	// 删除老记录
+	for _, v := range recordList {
+		if slices.IndexFunc(addRecord, func(record *platform.Record) bool {
+			return record.Name == v.Name
+		}) != -1 {
+			if err = manager.DelRecord(ctx, v.ID); err != nil {
+				logger.Error("del record failed", zap.String("value", v.Value), zap.Error(err))
+				return err
 			}
+			break
 		}
+	}
+	// 添加新记录
+	for _, record := range addRecord {
 		if err = manager.AddRecord(ctx, record); err != nil {
 			logger.Error("add record failed", zap.Error(err))
 			return err
@@ -158,13 +163,9 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 						logger.Error("lookup txt failed", zap.Error(err))
 						continue
 					}
-					// 判断是否有记录且只有一条
-					if len(list) != 1 {
-						equalNum = 0
-						continue
-					}
-					// 连续3次记录相等
-					if list[0] == v.Record {
+					// 判断是否包含记录
+					if slices.Index(list, record.Value) != -1 {
+						// 连续3次记录存在
 						if equalNum++; equalNum == 3 {
 							return
 						}
@@ -175,6 +176,7 @@ func (c *CertHandler) CreateCert(ctx context.Context, msg *message.CreateCertMes
 			}
 		}()
 	}
+
 	wg.Wait()
 	// 等待申请完成
 	var cancel context.CancelFunc

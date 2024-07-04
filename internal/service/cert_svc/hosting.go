@@ -2,10 +2,8 @@ package cert_svc
 
 import (
 	"context"
-	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
 	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
 	"github.com/codfrm/dns-kit/internal/service/cert_svc/deploy"
-	"strings"
 	"sync"
 	"time"
 
@@ -177,26 +175,13 @@ func (h *hostingSvc) GetDomains(ctx context.Context, hosting *cert_hosting_entit
 		}
 		domains = []string{cdn.Domain}
 	} else if hosting.Type == cert_hosting_entity.CertHostingTypeProvider {
-		// 厂商部署
-		provider, err := provider_repo.Provider().Find(ctx, hosting.ProviderID)
+		deploy, err := deploy.Factory(ctx, hosting)
 		if err != nil {
 			return nil, err
 		}
-		if err := provider.Check(ctx); err != nil {
-			_ = cert_hosting_repo.CertHosting().UpdateStatus(ctx,
-				hosting.ID, cert_hosting_entity.CertHostingStatusFail)
+		domains, err = deploy.Domains(ctx, hosting)
+		if err != nil {
 			return nil, err
-		}
-		switch provider.Platform {
-		case provider_entity.PlatformKubernetes:
-			// k8s从config中获取domain
-			domainStr, ok := hosting.ConfigMap()["domain"]
-			if !ok {
-				return nil, i18n.NewError(ctx, code.CertHostingDomainNotFound)
-			}
-			domains = strings.Split(domainStr, ",")
-		default:
-			return nil, i18n.NewError(ctx, code.ProviderNotSupport)
 		}
 	}
 	return domains, nil
