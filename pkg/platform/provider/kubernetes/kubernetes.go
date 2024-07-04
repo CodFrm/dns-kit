@@ -42,13 +42,17 @@ func (k *Kubernetes) GetCDNDetail(ctx context.Context, domain *platform.CDNItem)
 
 func (k *Kubernetes) SetCDNHttpsCert(ctx context.Context, domain *platform.CDNItem, cert, key string) error {
 	// 从domain.id中取出命名空间和域名
-	secretName := strings.ReplaceAll(domain.Domain, ".", "-")
-	secretName = strings.ReplaceAll(secretName, "*.", "")
+	secretName := strings.ReplaceAll(domain.Domain, "*.", "")
+	secretName = strings.ReplaceAll(secretName, ".", "-")
 	secretName += "-tls"
 	// 判断secret是否存在
 	getSecret, err := k.cli.CoreV1().Secrets(domain.ID).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
-		return err
+		if !strings.Contains(err.Error(), "not found") {
+			logger.Ctx(ctx).Error("get secret failed", zap.Error(err))
+			return err
+		}
+		getSecret = nil
 	}
 	secret := &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -66,13 +70,17 @@ func (k *Kubernetes) SetCDNHttpsCert(ctx context.Context, domain *platform.CDNIt
 		Type: "kubernetes.io/tls",
 	}
 	if getSecret != nil {
-		_, err = k.cli.CoreV1().Secrets(domain.ID).Update(ctx, secret, metav1.UpdateOptions{})
+		_, err := k.cli.CoreV1().Secrets(domain.ID).Update(ctx, secret, metav1.UpdateOptions{})
+		if err != nil {
+			logger.Ctx(ctx).Error("update secret failed", zap.Error(err))
+			return err
+		}
 	} else {
-		_, err = k.cli.CoreV1().Secrets(domain.ID).Create(ctx, secret, metav1.CreateOptions{})
-	}
-	if err != nil {
-		logger.Ctx(ctx).Error("create secret failed", zap.Error(err))
-		return err
+		_, err := k.cli.CoreV1().Secrets(domain.ID).Create(ctx, secret, metav1.CreateOptions{})
+		if err != nil {
+			logger.Ctx(ctx).Error("create secret failed", zap.Error(err))
+			return err
+		}
 	}
 	return nil
 }
