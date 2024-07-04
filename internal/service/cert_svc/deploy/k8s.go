@@ -2,11 +2,12 @@ package deploy
 
 import (
 	"context"
+	"strings"
+
 	"github.com/codfrm/dns-kit/internal/model/entity/cert_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/cert_hosting_entity"
 	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
 	"github.com/codfrm/dns-kit/pkg/platform"
-	"strings"
 )
 
 type K8s struct {

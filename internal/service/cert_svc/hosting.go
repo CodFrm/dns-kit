@@ -2,10 +2,11 @@ package cert_svc
 
 import (
 	"context"
-	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
-	"github.com/codfrm/dns-kit/internal/service/cert_svc/deploy"
 	"sync"
 	"time"
+
+	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
+	"github.com/codfrm/dns-kit/internal/service/cert_svc/deploy"
 
 	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/iam/audit"

@@ -1,18 +1,18 @@
 app:
-    encrypt_key: G7LzxQ5mmVx3Ua5
+    encrypt_key: ${RANDOM_STRING}
 broker:
     type: event_bus
 cache:
     type: "memory"
 db:
     driver: sqlite
-    dsn: data.db
+    dsn: ./runtime/data.db
     prefix: null
 debug: false
 env: prod
 http:
     address:
-        - :8080
+        - :5174
 logger:
     disableConsole: false
     level: info

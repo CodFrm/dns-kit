@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 
 	"github.com/codfrm/cago"
@@ -29,8 +30,12 @@ import (
 )
 
 func main() {
+	var configFile string
+	flag.StringVar(&configFile, "config", "./configs/config.yaml", "config file")
+	flag.Parse()
+
 	ctx := context.Background()
-	cfg, err := configs.NewConfig("dns-kit")
+	cfg, err := configs.NewConfig("dns-kit", configs.WithConfigFile(configFile))
 	if err != nil {
 		log.Fatalf("load config err: %v", err)
 	}

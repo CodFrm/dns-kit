@@ -47,6 +47,7 @@ const AddForm: React.FC<{
     if (props.visible) {
       form.resetFields();
     }
+    form.setFieldValue('type', type);
   }, [props.visible]);
 
   const PlaformForm = platformForm[platform];

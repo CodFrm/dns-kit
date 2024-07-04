@@ -24,7 +24,6 @@
 /runtime
 /bin
 
-data.db
-
 /frontend/node_modules
 /frontend/dist
+/data

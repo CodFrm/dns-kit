@@ -2,6 +2,8 @@ package kubernetes
 
 import (
 	"context"
+	"strings"
+
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/dns-kit/pkg/platform"
 	"go.uber.org/zap"
@@ -10,7 +12,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"strings"
 )
 
 type Kubernetes struct {

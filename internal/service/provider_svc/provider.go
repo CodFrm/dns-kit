@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/dns-kit/pkg/platform"
 	"sync"
 	"time"
+
+	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/dns-kit/pkg/platform"
 
 	"github.com/codfrm/dns-kit/internal/api/cdn"
 	"github.com/codfrm/dns-kit/internal/api/domain"

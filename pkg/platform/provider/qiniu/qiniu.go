@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/codfrm/dns-kit/pkg/platform"
-	"github.com/qiniu/go-sdk/v7/auth"
 	"io"
 	"net/http"
+
+	"github.com/codfrm/dns-kit/pkg/platform"
+	"github.com/qiniu/go-sdk/v7/auth"
 )
 
 type Qiniu struct {
@@ -42,7 +43,7 @@ func newRequestOptions(opts ...requestOption) *requestOptions {
 	return r
 }
 
-func (q *Qiniu) request(ctx context.Context, path string, body, resp any, options ...requestOption) (*http.Response, error) {
+func (q *Qiniu) request(ctx context.Context, path string, body, resp any, options ...requestOption) (any, error) {
 	opts := newRequestOptions(options...)
 
 	urlStr := fmt.Sprintf("%s%s", "https://"+opts.host, path)

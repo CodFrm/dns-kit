@@ -49,6 +49,7 @@ GOOS=linux
 GOARCH=amd64
 APP_NAME=dns-kit
 APP_VERSION=1.0.0
+LD_FLAGS=-w -s -X github.com/codfrm/cago/configs.Version=${APP_VERSION}
 
 SUFFIX=
 ifeq ($(GOOS),windows)
@@ -60,7 +61,13 @@ build:
 	cd frontend && yarn && yarn build
 	# 构建后端
 	go mod tidy
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(APP_NAME)_v$(APP_VERSION)$(SUFFIX) ./cmd/app
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o "bin/${APP_NAME}${BINARY_SUFFIX}" -trimpath -ldflags "${LD_FLAGS}" ./cmd/app
 
 docker:
-	docker build -t $(APP_NAME):$(APP_VERSION) .
+	docker build --platform=$(GOOS)/$(GOARCH) -t $(APP_NAME):$(APP_VERSION) .
+
+docker-push:
+	docker tag $(APP_NAME):$(APP_VERSION) codfrm/$(APP_NAME):$(APP_VERSION)
+	docker push codfrm/$(APP_NAME):$(APP_VERSION)
+	docker tag $(APP_NAME):$(APP_VERSION) codfrm/$(APP_NAME):latest
+	docker push codfrm/$(APP_NAME):latest
