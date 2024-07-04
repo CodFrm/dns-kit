@@ -56,7 +56,13 @@ export const certApiSlice = apiSlice.injectEndpoints({
     }),
     certHostingAdd: build.mutation<
       ApiResponse,
-      { email: string; cdn_id: number }
+      {
+        email: string;
+        type: 1 | 2;
+        cdn_id?: number;
+        provider_id?: number;
+        config?: Record<string, string>;
+      }
     >({
       query(args) {
         return {

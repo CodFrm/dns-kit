@@ -1,3 +1,4 @@
+import Kubernetes from '@/pages/certificate/hosting/platform/kubernetes';
 import { useCdnListQuery } from '@/services/cdn.service';
 import {
   useCertHostingAddMutation,
@@ -18,6 +19,18 @@ import {
 import FormItem from '@arco-design/web-react/es/Form/form-item';
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
 
+export const platformForm: {
+  [key: string]: {
+    name: string;
+    component: FunctionComponent;
+  };
+} = {
+  kubernetes: {
+    name: 'Kubernetes',
+    component: Kubernetes,
+  },
+};
+
 const AddForm: React.FC<{
   visible: boolean;
   onOk: () => void;
@@ -28,12 +41,15 @@ const AddForm: React.FC<{
   const { data: cdnData, isLoading: cdnIsLoading } = useCertHostingQueryQuery();
   const { data: providerData, isLoading: providerIsLoading } =
     useProviderListQuery();
+  const [platform, setPlatform] = useState<string | undefined>();
   const [type, setType] = useState<string>('cdn');
   useEffect(() => {
     if (props.visible) {
       form.resetFields();
     }
   }, [props.visible]);
+
+  const PlaformForm = platformForm[platform];
 
   return (
     <Modal
@@ -45,7 +61,10 @@ const AddForm: React.FC<{
           const values = form.getFieldsValue();
           add({
             email: values['email'],
+            type: values['type'] == 'cdn' ? 1 : 2,
             cdn_id: values['cdn_id'],
+            provider_id: values['provider_id'],
+            config: values['config'],
           })
             .unwrap()
             .then((res) => {
@@ -100,17 +119,30 @@ const AddForm: React.FC<{
               label="厂商"
               rules={[{ required: true }]}
             >
-              <Select loading={providerIsLoading}>
+              <Select
+                loading={providerIsLoading}
+                onChange={(v) => {
+                  console.log(
+                    providerData?.data?.list.find((item) => item.id == v),
+                  );
+                  setPlatform(
+                    providerData?.data?.list.find((item) => item.id == v)
+                      ?.platform,
+                  );
+                }}
+              >
                 {providerData?.data?.list?.map((item) => (
-                  <Select.Option key={item.id} value={item.id}>
+                  <Select.Option
+                    key={item.id}
+                    value={item.id}
+                    disabled={!['kubernetes'].includes(item.platform)}
+                  >
                     {item.name}
                   </Select.Option>
                 ))}
               </Select>
             </FormItem>
-            <FormItem field="domains" label="域名" rules={[{ required: true }]}>
-              <InputTag placeholder="请输入要申请的域名，按下回车添加" />
-            </FormItem>
+            {PlaformForm && <PlaformForm.component />}
           </>
         )}
       </Form>

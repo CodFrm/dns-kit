@@ -43,4 +43,5 @@ const (
 	CertHostingExist
 	CertHostingDeploy
 	CertHostingTypeError
+	CertHostingDomainNotFound
 )

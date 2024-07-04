@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/dns-kit/pkg/platform"
 	"sync"
 	"time"
@@ -110,6 +111,7 @@ func (p *providerSvc) CreateProvider(ctx context.Context, req *api.CreateProvide
 	}
 	user, err := manager.UserDetails(ctx)
 	if err != nil {
+		logger.Ctx(ctx).Error("get user failed", zap.Error(err))
 		return nil, i18n.NewError(ctx, code.ProviderSecretError)
 	}
 	provider2.UserID = user.ID
@@ -159,6 +161,7 @@ func (p *providerSvc) UpdateProvider(ctx context.Context, req *api.UpdateProvide
 		}
 		user, err := manager.UserDetails(ctx)
 		if err != nil {
+			logger.Ctx(ctx).Error("get user failed", zap.Error(err))
 			return nil, i18n.NewError(ctx, code.ProviderSecretError)
 		}
 		// 判断重复添加

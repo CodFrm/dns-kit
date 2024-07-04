@@ -2,13 +2,13 @@ package handler
 
 import (
 	"context"
-
 	"github.com/codfrm/cago/pkg/broker/broker"
 	logger2 "github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/dns-kit/internal/model/entity/cert_hosting_entity"
 	"github.com/codfrm/dns-kit/internal/repository/cdn_repo"
 	"github.com/codfrm/dns-kit/internal/repository/cert_hosting_repo"
 	"github.com/codfrm/dns-kit/internal/repository/cert_repo"
+	"github.com/codfrm/dns-kit/internal/service/cert_svc/deploy"
 	"github.com/codfrm/dns-kit/internal/task/queue"
 	"github.com/codfrm/dns-kit/internal/task/queue/message"
 	"github.com/codfrm/dns-kit/pkg/platform"
@@ -45,33 +45,45 @@ func (h *CertHostingHandler) CreateCertAfter(ctx context.Context, msg *message.C
 			}
 			return nil
 		}
-		// 部署到cdn
-		err := func() error {
-			cdn, err := cdn_repo.Cdn().Find(ctx, v.CdnID)
-			if err != nil {
-				logger.Error("find cdn error", zap.Error(err))
-				return err
-			}
-			if err := cdn.Check(ctx); err != nil {
-				logger.Error("cdn check error", zap.Error(err))
-				return err
-			}
-			manager, err := cdn.CDNManger(ctx)
-			if err != nil {
-				logger.Error("cdn manager error", zap.Error(err))
-				return err
-			}
-			if err := manager.SetCDNHttpsCert(ctx, &platform.CDNItem{
-				ID:     cdn.CdnID,
-				Domain: cdn.Domain,
-			}, cert.Certificate, cert.PrivateKey); err != nil {
-				logger.Error("set cdn https cert error", zap.Error(err))
-				return err
-			}
-			return nil
-		}()
+		if v.Type == cert_hosting_entity.CertHostingTypeCDN {
+			// 部署到cdn
+			err = func() error {
+				cdn, err := cdn_repo.Cdn().Find(ctx, v.CdnID)
+				if err != nil {
+					logger.Error("find cdn error", zap.Error(err))
+					return err
+				}
+				if err := cdn.Check(ctx); err != nil {
+					logger.Error("cdn check error", zap.Error(err))
+					return err
+				}
+				manager, err := cdn.CDNManger(ctx)
+				if err != nil {
+					logger.Error("cdn manager error", zap.Error(err))
+					return err
+				}
+				if err := manager.SetCDNHttpsCert(ctx, &platform.CDNItem{
+					ID:     cdn.CdnID,
+					Domain: cdn.Domain,
+				}, cert.Certificate, cert.PrivateKey); err != nil {
+					logger.Error("set cdn https cert error", zap.Error(err))
+					return err
+				}
+				return nil
+			}()
+		} else {
+			// 部署到厂商
+			err = func() error {
+				deploy, err := deploy.Factory(ctx, v)
+				if err != nil {
+					return err
+				}
+				return deploy.Deploy(ctx, v, cert)
+			}()
+		}
 		if err != nil {
 			// 修改状态
+			logger.Error("deploy failed", zap.Error(err))
 			if err := cert_hosting_repo.CertHosting().UpdateStatus(ctx, v.ID, cert_hosting_entity.CertHostingStatusDeployFail); err != nil {
 				logger.Error("update hosting status failed", zap.Error(err))
 			}

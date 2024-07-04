@@ -2,6 +2,9 @@ package cert_svc
 
 import (
 	"context"
+	"github.com/codfrm/dns-kit/internal/model/entity/provider_entity"
+	"github.com/codfrm/dns-kit/internal/repository/provider_repo"
+	"github.com/codfrm/dns-kit/internal/service/cert_svc/deploy"
 	"strings"
 	"sync"
 	"time"
@@ -57,18 +60,32 @@ func (h *hostingSvc) HostingList(ctx context.Context, req *api.HostingListReques
 		},
 	}
 	for _, v := range list {
-		cdn, err := cdn_repo.Cdn().Find(ctx, v.CdnID)
-		if err != nil {
-			return nil, err
-		}
-		ret.List = append(ret.List, &api.HostingItem{
+		item := &api.HostingItem{
 			ID:         v.ID,
 			CdnID:      v.CdnID,
-			CDN:        cdn.Domain,
 			CertID:     v.CertID,
 			Status:     v.Status,
 			Createtime: v.Createtime,
-		})
+		}
+		switch v.Type {
+		case cert_hosting_entity.CertHostingTypeCDN:
+			cdn, err := cdn_repo.Cdn().Find(ctx, v.CdnID)
+			if err != nil {
+				return nil, err
+			}
+			item.CDN = cdn.Domain
+		case cert_hosting_entity.CertHostingTypeProvider:
+			deploy, err := deploy.Factory(ctx, v)
+			if err != nil {
+				return nil, err
+			}
+			domains, err := deploy.Domains(ctx, v)
+			if err != nil {
+				return nil, err
+			}
+			item.CDN = domains[0]
+		}
+		ret.List = append(ret.List, item)
 	}
 	return ret, nil
 }
@@ -77,6 +94,16 @@ func (h *hostingSvc) HostingList(ctx context.Context, req *api.HostingListReques
 func (h *hostingSvc) HostingAdd(ctx context.Context, req *api.HostingAddRequest) (*api.HostingAddResponse, error) {
 	h.Lock()
 	defer h.Unlock()
+	// 添加入托管
+	hosting := &cert_hosting_entity.CertHosting{
+		Email:      req.Email,
+		Type:       req.Type,
+		CdnID:      req.CdnID,
+		ProviderID: req.ProviderID,
+		Status:     cert_hosting_entity.CertHostingStatusDeploy,
+		Createtime: time.Now().Unix(),
+		Updatetime: time.Now().Unix(),
+	}
 	if req.Type == cert_hosting_entity.CertHostingTypeCDN {
 		cdn, err := cdn_repo.Cdn().Find(ctx, req.CdnID)
 		if err != nil {
@@ -95,30 +122,18 @@ func (h *hostingSvc) HostingAdd(ctx context.Context, req *api.HostingAddRequest)
 		}
 	} else if req.Type == cert_hosting_entity.CertHostingTypeProvider {
 		// 判断厂商是否存在
-		provider, err := cert_hosting_repo.CertHosting().Find(ctx, req.ProviderID)
+		provider, err := provider_repo.Provider().Find(ctx, req.ProviderID)
 		if err != nil {
 			return nil, err
 		}
 		if err := provider.Check(ctx); err != nil {
 			return nil, err
 		}
-		// 检查域名是否正确
-		if err := Cert().CheckDomains(ctx, req.Domains); err != nil {
+		if err := hosting.SetConfigMap(req.Config); err != nil {
 			return nil, err
 		}
 	} else {
 		return nil, i18n.NewError(ctx, code.CertHostingTypeError)
-	}
-	// 添加入托管
-	hosting := &cert_hosting_entity.CertHosting{
-		Email:      req.Email,
-		Type:       req.Type,
-		CdnID:      req.CdnID,
-		ProviderID: req.ProviderID,
-		Domains:    strings.Join(req.Domains, ","),
-		Status:     cert_hosting_entity.CertHostingStatusDeploy,
-		Createtime: time.Now().Unix(),
-		Updatetime: time.Now().Unix(),
 	}
 	if err := cert_hosting_repo.CertHosting().Create(ctx, hosting); err != nil {
 		return nil, err
@@ -148,6 +163,45 @@ func (h *hostingSvc) HostingDelete(ctx context.Context, req *api.HostingDeleteRe
 	return nil, nil
 }
 
+func (h *hostingSvc) GetDomains(ctx context.Context, hosting *cert_hosting_entity.CertHosting) ([]string, error) {
+	var domains []string
+	if hosting.Type == cert_hosting_entity.CertHostingTypeCDN {
+		cdn, err := cdn_repo.Cdn().Find(ctx, hosting.CdnID)
+		if err != nil {
+			return nil, err
+		}
+		if err := cdn.Check(ctx); err != nil {
+			_ = cert_hosting_repo.CertHosting().UpdateStatus(ctx,
+				hosting.ID, cert_hosting_entity.CertHostingStatusFail)
+			return nil, err
+		}
+		domains = []string{cdn.Domain}
+	} else if hosting.Type == cert_hosting_entity.CertHostingTypeProvider {
+		// 厂商部署
+		provider, err := provider_repo.Provider().Find(ctx, hosting.ProviderID)
+		if err != nil {
+			return nil, err
+		}
+		if err := provider.Check(ctx); err != nil {
+			_ = cert_hosting_repo.CertHosting().UpdateStatus(ctx,
+				hosting.ID, cert_hosting_entity.CertHostingStatusFail)
+			return nil, err
+		}
+		switch provider.Platform {
+		case provider_entity.PlatformKubernetes:
+			// k8s从config中获取domain
+			domainStr, ok := hosting.ConfigMap()["domain"]
+			if !ok {
+				return nil, i18n.NewError(ctx, code.CertHostingDomainNotFound)
+			}
+			domains = strings.Split(domainStr, ",")
+		default:
+			return nil, i18n.NewError(ctx, code.ProviderNotSupport)
+		}
+	}
+	return domains, nil
+}
+
 // ReDeploy 重新部署
 func (h *hostingSvc) ReDeploy(ctx context.Context, id int64) error {
 	hosting, err := cert_hosting_repo.CertHosting().Find(ctx, id)
@@ -160,13 +214,12 @@ func (h *hostingSvc) ReDeploy(ctx context.Context, id int64) error {
 	if hosting.Status != cert_hosting_entity.CertHostingStatusDeploy {
 		return i18n.NewError(ctx, code.CertHostingDeploy)
 	}
-	cdn, err := cdn_repo.Cdn().Find(ctx, hosting.CdnID)
+	domains, err := h.GetDomains(ctx, hosting)
 	if err != nil {
 		return err
 	}
-	if err := cdn.Check(ctx); err != nil {
-		_ = cert_hosting_repo.CertHosting().UpdateStatus(ctx,
-			hosting.ID, cert_hosting_entity.CertHostingStatusFail)
+	// 检查域名
+	if err := Cert().CheckDomains(ctx, domains); err != nil {
 		return err
 	}
 	defer func() {
@@ -178,7 +231,7 @@ func (h *hostingSvc) ReDeploy(ctx context.Context, id int64) error {
 	// 发起托管证书更新请求
 	cert, err := Cert().Create(ctx, (&api.CreateRequest{
 		Email:   hosting.Email,
-		Domains: []string{cdn.Domain},
+		Domains: domains,
 	}).SetIgnoreMsg(true))
 	if err != nil {
 		return err
