@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/codfrm/dns-kit/pkg/platform"
 	"github.com/qiniu/go-sdk/v7/auth"
@@ -128,22 +130,20 @@ func (q *Qiniu) SetCDNHttpsCert(ctx context.Context, domain *platform.CDNItem, c
 		return err
 	}
 	// 上传证书
-	//resp := &UploadCertResponse{}
-	//_, err = q.request(ctx, "/sslcert", &UploadCertRequest{
-	//	Name:       "dns-kit-cert-" + strconv.FormatInt(time.Now().Unix(), 10),
-	//	CommonName: domain.ID,
-	//	Pri:        key,
-	//	Ca:         cert,
-	//}, resp)
-	//if err != nil {
-	//	return err
-	//}
+	resp := &UploadCertResponse{}
+	_, err = q.request(ctx, "/sslcert", &UploadCertRequest{
+		Name:       "dns-kit-cert-" + strconv.FormatInt(time.Now().Unix(), 10),
+		CommonName: domain.ID,
+		Pri:        key,
+		Ca:         cert,
+	}, resp)
+	if err != nil {
+		return err
+	}
 	// 设置证书
 	_, err = q.request(ctx, "/domain/"+domain.ID+"/sslize", &SetCDNHttpsRequest{
-		//Certid:      resp.CertID,
-		Certid: "663cc30a9ce3e7549ac8645d",
-		//ForceHttps:  domainDetailResp.Https.ForceHttps,
-		ForceHttps:  true,
+		Certid:      resp.CertID,
+		ForceHttps:  domainDetailResp.Https.ForceHttps,
 		Http2Enable: domainDetailResp.Https.Http2Enable,
 	}, nil, func(options *requestOptions) {
 		options.method = http.MethodPut

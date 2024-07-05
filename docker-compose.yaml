@@ -2,7 +2,7 @@ version: '3'
 
 services:
   dns-kit:
-    image: dns-kit:1.0.0
+    image: codfrm/dns-kit:latest
     container_name: dns-kit
     restart: unless-stopped
     volumes:
