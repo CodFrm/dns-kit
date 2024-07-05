@@ -28,5 +28,5 @@ jobs:
 
     - name: Tests
       run: |
-        go test $(go list ./...)
+        go test ./...
 

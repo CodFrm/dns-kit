@@ -24,7 +24,7 @@
 
 ```
 docker run -d \
-  -v $PWD/data:/app/runtime \
+  -v $PWD/runtime:/app/runtime \
   -p 5174:5174 \
   --name dns-kit \
   --restart unless-stopped \
@@ -42,7 +42,7 @@ services:
     container_name: dns-kit
     restart: unless-stopped
     volumes:
-      - ./data:/app/runtime
+      - ./runtime:/app/runtime
     ports:
       - "5174:5174"
 ```

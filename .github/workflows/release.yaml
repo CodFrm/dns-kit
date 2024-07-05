@@ -48,7 +48,7 @@ jobs:
 
     - name: Tests
       run: |
-        go test $(go list ./...)
+        go test ./...
 
     - name: Build binary file
       env:
@@ -56,7 +56,6 @@ jobs:
          GOARCH: ${{ matrix.goarch }}
       run: |
          if [ $GOOS = "windows" ]; then export BINARY_SUFFIX="$BINARY_SUFFIX.exe"; fi
-         export CGO_ENABLED=0
          export LD_FLAGS="-w -s -X github.com/codfrm/cago/configs.Version=${APP_VERSION}"
 
          go build -o "bin/${APP_NAME}${BINARY_SUFFIX}" -trimpath -ldflags "${LD_FLAGS}" ./cmd/app

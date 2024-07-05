@@ -2,10 +2,10 @@ version: '3'
 
 services:
   dns-kit:
-    image: codfrm/dns-kit:latest
+    image: dns-kit:1.0.0
     container_name: dns-kit
     restart: unless-stopped
     volumes:
-      - ./data:/app/runtime
+      - ./runtime:/app/runtime
     ports:
       - "5174:5174"

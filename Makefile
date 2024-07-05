@@ -45,8 +45,6 @@ generate: check-mockgen swagger
 goconvey: check-goconvey
 	goconvey
 
-GOOS=linux
-GOARCH=amd64
 APP_NAME=dns-kit
 APP_VERSION=1.0.0
 LD_FLAGS=-w -s -X github.com/codfrm/cago/configs.Version=${APP_VERSION}
@@ -61,13 +59,12 @@ build:
 	cd frontend && yarn && yarn build
 	# 构建后端
 	go mod tidy
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o "bin/${APP_NAME}${BINARY_SUFFIX}" -trimpath -ldflags "${LD_FLAGS}" ./cmd/app
+	go build -o "bin/${APP_NAME}${BINARY_SUFFIX}" -trimpath -ldflags "${LD_FLAGS}" ./cmd/app
+
+BUILDX_PLATFORM=linux/amd64,linux/arm64
 
 docker:
-	docker build --platform=$(GOOS)/$(GOARCH) -t $(APP_NAME):$(APP_VERSION) .
-
-docker-push:
-	docker tag $(APP_NAME):$(APP_VERSION) codfrm/$(APP_NAME):$(APP_VERSION)
-	docker push codfrm/$(APP_NAME):$(APP_VERSION)
-	docker tag $(APP_NAME):$(APP_VERSION) codfrm/$(APP_NAME):latest
-	docker push codfrm/$(APP_NAME):latest
+	docker build \
+	  --build-arg APP_NAME=$(APP_NAME) \
+	  --build-arg CHINA_MIRROR=true \
+	  --build-arg APP_VERSION=$(APP_VERSION) -t $(APP_NAME):$(APP_VERSION) .
